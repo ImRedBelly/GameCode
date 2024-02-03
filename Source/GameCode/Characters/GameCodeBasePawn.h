@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h" 
+#include "GameFramework/Pawn.h"
 #include "Components/SphereComponent.h"
 #include "GameCodeBasePawn.generated.h"
 
@@ -20,4 +20,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	void Jump();
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	UFUNCTION()
+	void OnBlendComplete();
+
+	AActor* CurrentViewActor;
 };
