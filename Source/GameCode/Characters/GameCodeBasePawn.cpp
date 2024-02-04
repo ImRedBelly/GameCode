@@ -6,13 +6,24 @@
 AGameCodeBasePawn::AGameCodeBasePawn()
 {
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
-	CollisionComponent->SetSphereRadius(50);
+	CollisionComponent->SetSphereRadius(CollisionSphereRadius);
 	CollisionComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	RootComponent = CollisionComponent;
 
-	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UGCBasePawnMovementComponent>(
-		TEXT("MovememntComponent"));
+	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UGCBasePawnMovementComponent>(TEXT("MovememntComponent"));
 	MovementComponent->SetUpdatedComponent(CollisionComponent);
+	
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->bUsePawnControlRotation = 1;
+	SpringArmComponent->SetupAttachment(RootComponent);
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	CameraComponent->SetupAttachment(SpringArmComponent);
+
+#if WITH_EDITORONLY_DATA
+	ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow"));
+	ArrowComponent->SetupAttachment(RootComponent);
+#endif
 }
 
 void AGameCodeBasePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -23,10 +34,12 @@ void AGameCodeBasePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("MoveForward", this, &AGameCodeBasePawn::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AGameCodeBasePawn::MoveRight);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AGameCodeBasePawn::Jump);
+
 }
 
 void AGameCodeBasePawn::MoveForward(float Value)
 {
+	InputForward = Value;
 	if (Value != 0.0f)
 	{
 		AddMovementInput(CurrentViewActor->GetActorForwardVector(), Value);
@@ -35,6 +48,7 @@ void AGameCodeBasePawn::MoveForward(float Value)
 
 void AGameCodeBasePawn::MoveRight(float Value)
 {
+	InputRight = Value;
 	if (Value != 0.0f)
 	{
 		AddMovementInput(CurrentViewActor->GetActorRightVector(), Value);
@@ -60,5 +74,4 @@ void AGameCodeBasePawn::BeginPlay()
 void AGameCodeBasePawn::OnBlendComplete()
 {
 	CurrentViewActor = GetController()->GetViewTarget();
-	UE_LOG(LogTemp, Log, TEXT("On Blended Complete. Current Actor: %s"), *CurrentViewActor->GetName());
 }

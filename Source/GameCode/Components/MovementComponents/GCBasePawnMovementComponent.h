@@ -9,12 +9,15 @@ UCLASS()
 class GAMECODE_API UGCBasePawnMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	void JumpStart();
-	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+	virtual bool IsFalling() const override;
+
+protected:
 	UPROPERTY(EditAnywhere)
 	float MaxSpeed = 1200.0f;
 	UPROPERTY(EditAnywhere)
