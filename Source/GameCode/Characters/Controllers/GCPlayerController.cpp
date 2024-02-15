@@ -16,17 +16,17 @@ void AGCPlayerController::SetupInputComponent()
 
 	InputComponent->BindAxis("TurnAtRate", this, &AGCPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpRate", this, &AGCPlayerController::LookUpAtRate);
-	
+
 	InputComponent->BindAxis("SwimForward", this, &AGCPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AGCPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AGCPlayerController::SwimUp);
 
+	InputComponent->BindAction("Mantle", IE_Pressed, this, &AGCPlayerController::Mantle);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &AGCPlayerController::Jump);
 	InputComponent->BindAction("Crouch", IE_Pressed, this, &AGCPlayerController::ChangeCrouchState);
 
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AGCPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AGCPlayerController::StopSprint);
-	
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -74,6 +74,14 @@ void AGCPlayerController::LookUpAtRate(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->LookUpAtRate(Value);
+	}
+}
+
+void AGCPlayerController::Mantle()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Mantle();
 	}
 }
 
