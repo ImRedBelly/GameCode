@@ -24,4 +24,9 @@ namespace GCTraceUtils
 	                             FQuat Rotation, FName ProfileName, FCollisionQueryParams Params,
 	                             bool bDrawDebug = false,
 	                             float DrawTime = -1, FColor HitColor = FColor::Red);
+	bool OverlapCapsuleBlockingByProfile(const UWorld* World, const FVector& Position, float CapsuleRadius,
+	                             float CapsuleHalfHeight,
+	                             FQuat Rotation, FName ProfileName, FCollisionQueryParams Params,
+	                             bool bDrawDebug = false,
+	                             float DrawTime = -1, FColor HitColor = FColor::Red);
 }

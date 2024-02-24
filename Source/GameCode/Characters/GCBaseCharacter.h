@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameCode/Actors/Interactive/InteractiveActor.h"
+#include "GameCode/Actors/Interactive/Environment/Ladder.h"
 #include "GameCode/Components/LedgeDetectorComponent.h"
 #include "GameFramework/Character.h"
 #include "GCBaseCharacter.generated.h"
@@ -44,6 +46,9 @@ public:
 		return GCBaseCharacterMovementComponent;
 	}
 
+	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
+
 	virtual void MoveForward(float Value)
 	{
 	}
@@ -85,8 +90,14 @@ public:
 	{
 	}
 
-	virtual void Mantle();
+	virtual void Mantle(bool bForce = false);
+	bool CanMantling() const;
 	virtual bool CanJumpInternal_Implementation() const override;
+	
+	void ClimbLadderUp(float Value);
+	void InteractWithLadder();
+
+	const ALadder* GetAvailableLadder() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category="Character|Movement")
@@ -121,4 +132,6 @@ private:
 	void TryChangeSprintState();
 	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 	bool bIsSprintRequested = false;
+
+	TArray<AInteractiveActor*> AvailableInteractiveActors;
 };

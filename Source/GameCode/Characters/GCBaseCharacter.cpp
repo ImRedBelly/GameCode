@@ -18,6 +18,16 @@ void AGCBaseCharacter::Tick(float DeltaSeconds)
 	TryChangeSprintState();
 }
 
+void AGCBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	AvailableInteractiveActors.AddUnique(InteractiveActor);
+}
+
+void AGCBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+	AvailableInteractiveActors.RemoveSingleSwap(InteractiveActor);
+}
+
 void AGCBaseCharacter::ChangeCrouchState()
 {
 	if (GetCharacterMovement()->IsCrouching())
@@ -42,8 +52,11 @@ void AGCBaseCharacter::StopSprint()
 	bIsSprintRequested = false;
 }
 
-void AGCBaseCharacter::Mantle()
+void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
 {
+	if (!(CanMantling() || bForce))
+		return;
+
 	FLedgeDescription LedgeDescription;
 	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
 	{
@@ -79,9 +92,56 @@ void AGCBaseCharacter::Mantle()
 	}
 }
 
+bool AGCBaseCharacter::CanMantling() const
+{
+	return GetBaseCharacterMovementComponent()->IsOnLadder();
+}
+
 bool AGCBaseCharacter::CanJumpInternal_Implementation() const
 {
 	return Super::CanJumpInternal_Implementation() && !GetBaseCharacterMovementComponent()->IsMantling();
+}
+
+void AGCBaseCharacter::ClimbLadderUp(float Value)
+{
+	if (GetBaseCharacterMovementComponent()->IsOnLadder() && !FMath::IsNearlyZero(Value))
+	{
+		FVector LadderUpVector = GetBaseCharacterMovementComponent()->GetCurrentLadder()->GetActorUpVector();
+		AddMovementInput(LadderUpVector, Value);
+	}
+}
+
+void AGCBaseCharacter::InteractWithLadder()
+{
+	if (GetBaseCharacterMovementComponent()->IsOnLadder())
+	{
+		GetBaseCharacterMovementComponent()->DetachFromLadder(EDetachFromLadderMethod::JumpOff);
+	}
+	else
+	{
+		const ALadder* AvailableLadder = GetAvailableLadder();
+		if (IsValid(AvailableLadder))
+		{
+			if (AvailableLadder->GetIsOnTop())
+			{
+				PlayAnimMontage(AvailableLadder->GetAttachFromTopAnimMontage());
+			}
+			GetBaseCharacterMovementComponent()->AttachToLadder(AvailableLadder);
+		}
+	}
+}
+const ALadder* AGCBaseCharacter::GetAvailableLadder() const
+{
+	const ALadder* Result = nullptr;	
+	for (const AInteractiveActor* InteractiveActor : AvailableInteractiveActors)
+	{
+		if (InteractiveActor->IsA<ALadder>())
+		{
+			Result = StaticCast<const ALadder*>(InteractiveActor);
+			break;
+		}
+	}
+	return Result;
 }
 
 bool AGCBaseCharacter::CanSprint()

@@ -31,11 +31,16 @@ private:
 	void StartSprint();
 	void StopSprint();
 
+	void ClimbLadderUp(float Value);
+	void InteractWithLadder();
 	
 	virtual void SwimForward(float Value);
 	virtual void SwimRight(float Value);
 	virtual void SwimUp(float Value);
+
+
+
 	
-protected:
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
+	
 };

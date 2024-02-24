@@ -13,20 +13,21 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &AGCPlayerController::MoveRight);
 	InputComponent->BindAxis("Turn", this, &AGCPlayerController::Turn);
 	InputComponent->BindAxis("LookUp", this, &AGCPlayerController::LookUp);
-
 	InputComponent->BindAxis("TurnAtRate", this, &AGCPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpRate", this, &AGCPlayerController::LookUpAtRate);
-
 	InputComponent->BindAxis("SwimForward", this, &AGCPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AGCPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AGCPlayerController::SwimUp);
-
+	InputComponent->BindAxis("ClimbLadderUp", this, &AGCPlayerController::ClimbLadderUp);
+	InputComponent->BindAction("InteractWithLadder", IE_Pressed, this, &AGCPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", IE_Pressed, this, &AGCPlayerController::Mantle);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &AGCPlayerController::Jump);
 	InputComponent->BindAction("Crouch", IE_Pressed, this, &AGCPlayerController::ChangeCrouchState);
-
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AGCPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AGCPlayerController::StopSprint);
+
+
+
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -77,11 +78,19 @@ void AGCPlayerController::LookUpAtRate(float Value)
 	}
 }
 
+void AGCPlayerController::InteractWithLadder()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->InteractWithLadder();
+	}
+}
+
 void AGCPlayerController::Mantle()
 {
 	if (CachedBaseCharacter.IsValid())
 	{
-		CachedBaseCharacter->Mantle();
+		CachedBaseCharacter->Mantle(true);
 	}
 }
 
@@ -114,6 +123,14 @@ void AGCPlayerController::StopSprint()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopSprint();
+	}
+}
+
+void AGCPlayerController::ClimbLadderUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ClimbLadderUp(Value);
 	}
 }
 
