@@ -10,6 +10,8 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 {
 	GCBaseCharacterMovementComponent = StaticCast<UGCBaseCharacterMovementComponent*>(GetCharacterMovement());
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
+	GetMesh()->CastShadow = true;
+	GetMesh()->bCastDynamicShadow = true;
 }
 
 void AGCBaseCharacter::Tick(float DeltaSeconds)
@@ -89,12 +91,17 @@ void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->Montage_Play(MantlingSettings.MantlingMontage, 1.0f, EMontagePlayReturnType::Duration,
 		                           MantlingParameters.StartTime);
+		OnMantling(MantlingSettings, MantlingParameters.StartTime);
 	}
 }
 
 bool AGCBaseCharacter::CanMantling() const
 {
 	return GetBaseCharacterMovementComponent()->IsOnLadder();
+}
+
+void AGCBaseCharacter::OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime)
+{
 }
 
 bool AGCBaseCharacter::CanJumpInternal_Implementation() const

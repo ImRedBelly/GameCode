@@ -16,6 +16,8 @@ struct FMantlingSettings
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAnimMontage* MantlingMontage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimMontage* FPMantlingMontage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCurveVector* MantlingCurve;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ClampMin=0, UIMin=0))
 	float AnimationCorrectionXY = 65.0f;
@@ -90,8 +92,9 @@ public:
 	{
 	}
 
-	virtual void Mantle(bool bForce = false);
+	void Mantle(bool bForce = false);
 	bool CanMantling() const;
+	virtual void OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime);
 	virtual bool CanJumpInternal_Implementation() const override;
 	
 	void ClimbLadderUp(float Value);

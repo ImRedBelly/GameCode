@@ -13,6 +13,8 @@ class GAMECODE_API AGCPlayerController : public APlayerController
 
 public:
 	virtual void SetPawn(APawn* InPawn) override;
+	bool GetIsIgnoreCameraPitch() const;
+	void SetIsIgnoreCameraPitch(bool bIgnoreCameraPitch_In);
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -27,20 +29,18 @@ private:
 	void Mantle();
 	void Jump();
 	void ChangeCrouchState();
-	
+
 	void StartSprint();
 	void StopSprint();
 
 	void ClimbLadderUp(float Value);
 	void InteractWithLadder();
-	
+
 	virtual void SwimForward(float Value);
 	virtual void SwimRight(float Value);
 	virtual void SwimUp(float Value);
 
-
-
-	
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
-	
+
+	bool bIsIgnoreCameraPitch = false;
 };

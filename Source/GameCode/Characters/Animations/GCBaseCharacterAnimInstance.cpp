@@ -29,4 +29,7 @@ void UGCBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsOnLadder = CharacterMovement->IsOnLadder();
 	if (bIsOnLadder)
 		LadderSpeedRatio = CharacterMovement->GetLadderSpeedRatio();
+
+	bIsStrafing = !CharacterMovement->bOrientRotationToMovement;
+	Direction = CalculateDirection(CharacterMovement->Velocity, CachedBaseCharacter->GetActorRotation());
 }

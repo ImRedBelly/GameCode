@@ -6,6 +6,16 @@ void AGCPlayerController::SetPawn(APawn* InPawn)
 	CachedBaseCharacter = Cast<AGCBaseCharacter>(InPawn);
 }
 
+bool AGCPlayerController::GetIsIgnoreCameraPitch() const
+{
+	return bIsIgnoreCameraPitch;
+}
+
+void AGCPlayerController::SetIsIgnoreCameraPitch(bool bIgnoreCameraPitch_In)
+{
+	bIsIgnoreCameraPitch = bIgnoreCameraPitch_In;
+}
+
 void AGCPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -25,9 +35,6 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Crouch", IE_Pressed, this, &AGCPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AGCPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AGCPlayerController::StopSprint);
-
-
-
 }
 
 void AGCPlayerController::MoveForward(float Value)
