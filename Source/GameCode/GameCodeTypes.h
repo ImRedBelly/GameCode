@@ -6,6 +6,8 @@
 const FName CollisionProfilePawn = FName("Pawn");
 
 const FName SocketFPCamera = FName("CameraSocket");
+const FName CollisionProfilePawnRagdoll = FName("Ragdoll");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
 
 const FName DebugCategoryLedgeDetection = FName("LedgeDetection");
+const FName DebugCategoryCharacterAttributes = FName("CharacterAttributes");

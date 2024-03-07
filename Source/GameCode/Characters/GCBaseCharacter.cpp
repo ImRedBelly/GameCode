@@ -1,6 +1,7 @@
 #include "GCBaseCharacter.h"
 
 #include "Curves/CurveVector.h"
+#include "GameCode/GameCodeTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
 
@@ -12,6 +13,14 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 	LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
 	GetMesh()->CastShadow = true;
 	GetMesh()->bCastDynamicShadow = true;
+
+	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeComponent>(TEXT("CharacterAttribute"));
+}
+
+void AGCBaseCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	CharacterAttributeComponent->OnDeathEvent.AddUObject(this, &AGCBaseCharacter::OnDeath);
 }
 
 void AGCBaseCharacter::Tick(float DeltaSeconds)
@@ -137,9 +146,10 @@ void AGCBaseCharacter::InteractWithLadder()
 		}
 	}
 }
+
 const ALadder* AGCBaseCharacter::GetAvailableLadder() const
 {
-	const ALadder* Result = nullptr;	
+	const ALadder* Result = nullptr;
 	for (const AInteractiveActor* InteractiveActor : AvailableInteractiveActors)
 	{
 		if (InteractiveActor->IsA<ALadder>())
@@ -151,9 +161,42 @@ const ALadder* AGCBaseCharacter::GetAvailableLadder() const
 	return Result;
 }
 
+void AGCBaseCharacter::Falling()
+{
+	Super::Falling();
+	GetBaseCharacterMovementComponent()->bNotifyApex = true;
+}
+
+void AGCBaseCharacter::NotifyJumpApex()
+{
+	Super::NotifyJumpApex();
+	CurrentFallApex = GetActorLocation();
+}
+
+void AGCBaseCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	float FallHeight = ((CurrentFallApex - GetActorLocation()).Z) * 0.01;
+	if (IsValid(FallDamageCurve))
+	{
+		float DamageAmount = FallDamageCurve->GetFloatValue(FallHeight);
+		TakeDamage(DamageAmount, FDamageEvent(), GetController(), Hit.Actor.Get());
+	}
+}
+
 bool AGCBaseCharacter::CanSprint()
 {
 	return true;
+}
+
+void AGCBaseCharacter::OnDeath()
+{
+	GetCharacterMovement()->DisableMovement();
+	float DurationMontage = PlayAnimMontage(OnDeathAnimMontage);
+	if (DurationMontage == 0)
+	{
+		EnableRagdoll();
+	}
 }
 
 void AGCBaseCharacter::TryChangeSprintState()
@@ -173,4 +216,10 @@ void AGCBaseCharacter::TryChangeSprintState()
 const FMantlingSettings& AGCBaseCharacter::GetMantlingSettings(float LedgeHeight) const
 {
 	return LedgeHeight > LowMantleMaxHeight ? HeightMantlingSettings : LowMantlingSettings;
+}
+
+void AGCBaseCharacter::EnableRagdoll()
+{
+	GetMesh()->SetCollisionProfileName(CollisionProfilePawnRagdoll);
+	GetMesh()->SetSimulatePhysics(true);
 }

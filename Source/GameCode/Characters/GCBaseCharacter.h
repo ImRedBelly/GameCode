@@ -4,6 +4,7 @@
 #include "GameCode/Actors/Interactive/InteractiveActor.h"
 #include "GameCode/Actors/Interactive/Environment/Ladder.h"
 #include "GameCode/Components/LedgeDetectorComponent.h"
+#include "GameCode/Components/CharacterComponents/CharacterAttributeComponent.h"
 #include "GameFramework/Character.h"
 #include "GCBaseCharacter.generated.h"
 
@@ -42,6 +43,7 @@ class GAMECODE_API AGCBaseCharacter : public ACharacter
 public:
 	AGCBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	FORCEINLINE UGCBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() const
 	{
@@ -96,11 +98,15 @@ public:
 	bool CanMantling() const;
 	virtual void OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime);
 	virtual bool CanJumpInternal_Implementation() const override;
-	
+
 	void ClimbLadderUp(float Value);
 	void InteractWithLadder();
 
 	const ALadder* GetAvailableLadder() const;
+	
+	virtual void Falling() override;
+	virtual void NotifyJumpApex() override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category="Character|Movement")
@@ -131,10 +137,23 @@ protected:
 		meta=(ClampMin=0.0f, UIMin = 0.0f))
 	float LowMantleMaxHeight = 125.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Components")
+	UCharacterAttributeComponent* CharacterAttributeComponent;
+
+	virtual void OnDeath();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Animations")
+	UAnimMontage* OnDeathAnimMontage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Attributes")
+	UCurveFloat* FallDamageCurve;
+	
+
 private:
 	void TryChangeSprintState();
 	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 	bool bIsSprintRequested = false;
 
 	TArray<AInteractiveActor*> AvailableInteractiveActors;
+	void EnableRagdoll();
+
+	FVector CurrentFallApex;
 };
