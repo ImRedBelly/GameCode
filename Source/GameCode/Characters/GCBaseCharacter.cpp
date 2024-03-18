@@ -2,6 +2,7 @@
 
 #include "Curves/CurveVector.h"
 #include "GameCode/GameCodeTypes.h"
+#include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
 
@@ -15,6 +16,7 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 	GetMesh()->bCastDynamicShadow = true;
 
 	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeComponent>(TEXT("CharacterAttribute"));
+	CharacterEquipmentComponent = CreateDefaultSubobject<UCharacterEquipmentComponent>(TEXT("CharacterEquipment"));
 }
 
 void AGCBaseCharacter::BeginPlay()
@@ -61,6 +63,11 @@ void AGCBaseCharacter::StartSprint()
 void AGCBaseCharacter::StopSprint()
 {
 	bIsSprintRequested = false;
+}
+
+void AGCBaseCharacter::Fire()
+{
+	CharacterEquipmentComponent->Fire();
 }
 
 void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
@@ -182,6 +189,11 @@ void AGCBaseCharacter::Landed(const FHitResult& Hit)
 		float DamageAmount = FallDamageCurve->GetFloatValue(FallHeight);
 		TakeDamage(DamageAmount, FDamageEvent(), GetController(), Hit.Actor.Get());
 	}
+}
+
+const UCharacterEquipmentComponent* AGCBaseCharacter::GetCharacterEquipmentComponent() const
+{
+	return CharacterEquipmentComponent;
 }
 
 bool AGCBaseCharacter::CanSprint()

@@ -9,6 +9,7 @@
 #include "GCBaseCharacter.generated.h"
 
 class UGCBaseCharacterMovementComponent;
+class UCharacterEquipmentComponent;
 
 USTRUCT(BlueprintType)
 struct FMantlingSettings
@@ -94,6 +95,8 @@ public:
 	{
 	}
 
+	void Fire();
+
 	void Mantle(bool bForce = false);
 	bool CanMantling() const;
 	virtual void OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime);
@@ -103,10 +106,11 @@ public:
 	void InteractWithLadder();
 
 	const ALadder* GetAvailableLadder() const;
-	
+
 	virtual void Falling() override;
 	virtual void NotifyJumpApex() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category="Character|Movement")
@@ -145,7 +149,9 @@ protected:
 	UAnimMontage* OnDeathAnimMontage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Attributes")
 	UCurveFloat* FallDamageCurve;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character|Components")
+	class UCharacterEquipmentComponent* CharacterEquipmentComponent;
 
 private:
 	void TryChangeSprintState();

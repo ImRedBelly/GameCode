@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "GameCode/GameCodeTypes.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
 #include "GCBaseCharacterAnimInstance.generated.h"
 
@@ -33,6 +34,10 @@ protected:
 	bool bIsStrafing = false;;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character animation", meta=(UIMin = -180, UIMax = 180))
 	float Direction = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character animation")
+	EEquipableItemType CurrentEquippedItemType = EEquipableItemType::None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character animation")
+	FRotator AimRotation = FRotator::ZeroRotator;
 
 private:
 	TWeakObjectPtr<AGCBaseCharacter> CachedBaseCharacter;

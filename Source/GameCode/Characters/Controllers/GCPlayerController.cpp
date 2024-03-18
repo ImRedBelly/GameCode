@@ -35,6 +35,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Crouch", IE_Pressed, this, &AGCPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AGCPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AGCPlayerController::StopSprint);
+	InputComponent->BindAction("Fire", IE_Pressed, this, &AGCPlayerController::Fire);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -162,5 +163,13 @@ void AGCPlayerController::SwimUp(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->SwimUp(Value);
+	}
+}
+
+void AGCPlayerController::Fire()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Fire();
 	}
 }

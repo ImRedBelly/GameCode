@@ -40,6 +40,8 @@ private:
 	virtual void SwimRight(float Value);
 	virtual void SwimUp(float Value);
 
+	void Fire();
+
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
 
 	bool bIsIgnoreCameraPitch = false;

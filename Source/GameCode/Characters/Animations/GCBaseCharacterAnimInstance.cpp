@@ -1,6 +1,6 @@
 #include "GCBaseCharacterAnimInstance.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
-
+#include "GameCode\Components\CharacterComponents\CharacterEquipmentComponent.h"
 
 void UGCBaseCharacterAnimInstance::NativeBeginPlay()
 {
@@ -32,4 +32,9 @@ void UGCBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	bIsStrafing = !CharacterMovement->bOrientRotationToMovement;
 	Direction = CalculateDirection(CharacterMovement->Velocity, CachedBaseCharacter->GetActorRotation());
+
+	AimRotation = CachedBaseCharacter->GetBaseAimRotation();
+
+	const UCharacterEquipmentComponent* CharacterEquipment = CachedBaseCharacter->GetCharacterEquipmentComponent();
+	CurrentEquippedItemType = CharacterEquipment->GetCurrentEquippedItemType();
 }
