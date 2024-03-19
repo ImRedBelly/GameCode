@@ -1,5 +1,6 @@
 #include "PlayerCharacter.h"
 
+#include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
@@ -114,4 +115,31 @@ void APlayerCharacter::OnJumped_Implementation()
 {
 	if (bIsCrouched)
 		UnCrouch();
+}
+
+void APlayerCharacter::OnStartAimingInternal()
+{
+	Super::OnStartAimingInternal();
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!IsValid(PlayerController))
+		return;
+	APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+	if (IsValid(CameraManager))
+	{
+		ARangeWeaponItem* RangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+		CameraManager->SetFOV(RangeWeapon->GetAimFOV());
+	}
+}
+
+void APlayerCharacter::OnStopAimingInternal()
+{
+	Super::OnStopAimingInternal();
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!IsValid(PlayerController))
+		return;
+	APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager;
+	if (IsValid(CameraManager))
+	{
+		CameraManager->UnlockFOV();
+	}
 }

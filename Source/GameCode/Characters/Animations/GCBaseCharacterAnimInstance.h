@@ -36,6 +36,12 @@ protected:
 	float Direction = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character animation")
 	EEquipableItemType CurrentEquippedItemType = EEquipableItemType::None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation | Weapon")
+	FTransform ForeGripSocketTransform;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation | Weapon")
+	bool bIsAiming;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character animation")
 	FRotator AimRotation = FRotator::ZeroRotator;
 

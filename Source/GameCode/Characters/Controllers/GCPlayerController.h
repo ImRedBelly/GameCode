@@ -40,7 +40,10 @@ private:
 	virtual void SwimRight(float Value);
 	virtual void SwimUp(float Value);
 
-	void Fire();
+	void PlayerStartFire();
+	void PlayerStopFire();
+	void StartAiming();
+	void StopAiming();
 
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
 

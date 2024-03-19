@@ -37,4 +37,7 @@ protected:
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Chatacter | Camera")
 	USpringArmComponent* SpringArmComponent;
+
+	virtual void OnStartAimingInternal() override;
+	virtual void OnStopAimingInternal() override;
 };

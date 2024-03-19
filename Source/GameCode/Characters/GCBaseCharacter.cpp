@@ -65,9 +65,58 @@ void AGCBaseCharacter::StopSprint()
 	bIsSprintRequested = false;
 }
 
-void AGCBaseCharacter::Fire()
+void AGCBaseCharacter::StartFire()
 {
-	CharacterEquipmentComponent->Fire();
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+		CurrentRangeWeapon->StartFire();
+}
+
+void AGCBaseCharacter::StopFire()
+{
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+		CurrentRangeWeapon->StopFire();
+}
+
+void AGCBaseCharacter::StartAiming()
+{
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (!IsValid(CurrentRangeWeapon))
+		return;
+	bIsAiming = true;
+	CurrentAimingMovementSpeed = CurrentRangeWeapon->GetAimMovementMaxSpeed();
+	CurrentRangeWeapon->StartAiming();
+	OnStartAiming();
+}
+
+void AGCBaseCharacter::StopAiming()
+{
+	if (!bIsAiming)
+		return;
+
+	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
+	if (IsValid(CurrentRangeWeapon))
+		CurrentRangeWeapon->StopAiming();
+	
+	bIsAiming = false;
+	CurrentAimingMovementSpeed = 0;
+	OnStopAiming();
+}
+
+void AGCBaseCharacter::OnStartAiming_Implementation()
+{
+	OnStartAimingInternal();
+}
+
+void AGCBaseCharacter::OnStopAiming_Implementation()
+{
+	OnStopAimingInternal();
+}
+
+float AGCBaseCharacter::GetAimingMovementSpeed() const
+{
+	return CurrentAimingMovementSpeed;
 }
 
 void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
@@ -114,6 +163,11 @@ void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
 bool AGCBaseCharacter::CanMantling() const
 {
 	return GetBaseCharacterMovementComponent()->IsOnLadder();
+}
+
+bool AGCBaseCharacter::IsAiming() const
+{
+	return bIsAiming;
 }
 
 void AGCBaseCharacter::OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime)
@@ -209,6 +263,14 @@ void AGCBaseCharacter::OnDeath()
 	{
 		EnableRagdoll();
 	}
+}
+
+void AGCBaseCharacter::OnStartAimingInternal()
+{
+}
+
+void AGCBaseCharacter::OnStopAimingInternal()
+{
 }
 
 void AGCBaseCharacter::TryChangeSprintState()

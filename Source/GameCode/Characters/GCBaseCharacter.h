@@ -95,10 +95,21 @@ public:
 	{
 	}
 
-	void Fire();
+	void StartFire();
+	void StopFire();
+	void StartAiming();
+	void StopAiming();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
+	void OnStartAiming();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
+	void OnStopAiming();
+
+	float GetAimingMovementSpeed() const;
 
 	void Mantle(bool bForce = false);
 	bool CanMantling() const;
+	bool IsAiming() const;
 	virtual void OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime);
 	virtual bool CanJumpInternal_Implementation() const override;
 
@@ -153,6 +164,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character|Components")
 	class UCharacterEquipmentComponent* CharacterEquipmentComponent;
 
+	virtual void OnStartAimingInternal();
+	virtual void OnStopAimingInternal();
+
 private:
 	void TryChangeSprintState();
 	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
@@ -162,4 +176,6 @@ private:
 	void EnableRagdoll();
 
 	FVector CurrentFallApex;
+	bool bIsAiming = false;
+	float CurrentAimingMovementSpeed;
 };

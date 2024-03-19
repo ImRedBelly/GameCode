@@ -26,18 +26,14 @@ protected:
 	USkeletalMeshComponent* FirstPersonMeshComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character | First person")
 	UCameraComponent* FirstPersonCameraComponent;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Pitch",
-		meta=(UIMin = -89, UIMax = 89))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Pitch", meta=(UIMin = -89, UIMax = 89))
 	float LadderCameraMinPitch = -60;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Pitch",
-		meta=(UIMin = -89, UIMax = 89))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Pitch", meta=(UIMin = -89, UIMax = 89))
 	float LadderCameraMaxPitch = 80;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Yaw",
-		meta=(UIMin = 0, UIMax = 359))
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Yaw", meta=(UIMin = 0, UIMax = 359))
 	float LadderCameraMinYaw = 5;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Yaw",
-		meta=(UIMin = 0, UIMax = 359))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | First person| Camera | Ladder| Yaw", meta=(UIMin = 0, UIMax = 359))
 	float LadderCameraMaxYaw = 175;
 
 private:
@@ -45,6 +41,6 @@ private:
 	FTimerHandle FPMontageTimer;
 	void OnFPMontageTimerElapsed();
 	bool IsFPMontagePlaying() const;
-void OnLadderStarted();
-void OnLadderStopped();
+	void OnLadderStarted();
+	void OnLadderStopped();
 };

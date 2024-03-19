@@ -1,16 +1,16 @@
 #include "WeaponBarellComponent.h"
-
 #include "DrawDebugHelpers.h"
-#include "GameCode/GameCodeTypes.h"
-#include "GameCode/SubSystems/DebugSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Components/DecalComponent.h"
+#include "GameCode/GameCodeTypes.h"
+#include "GameCode/SubSystems/DebugSubsystem.h"
 
 void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, AController* Controller)
 {
 	FVector MuzzleLocation = GetComponentLocation();
-	FVector ShotEnd = ShotStart + FireRange * ShotDirection;
+	FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
 
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashFX, MuzzleLocation, GetComponentRotation());
 
@@ -32,7 +32,14 @@ void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, ACon
 		{
 			HitActor->TakeDamage(DamageAmount, FDamageEvent{}, Controller, GetOwner());
 		}
-
+		UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(
+			GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize,
+			ShotResult.ImpactPoint, ShotResult.ImpactNormal.ToOrientationRotator());
+		if (IsValid(DecalComponent))
+		{
+			DecalComponent->SetFadeScreenSize(0.001f);
+			DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
+		}
 		if (bIsDebugEnable)
 			DrawDebugSphere(GetWorld(), ShotEnd, 10, 24, FColor::Red, false, 1);
 	}

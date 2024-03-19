@@ -35,7 +35,10 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Crouch", IE_Pressed, this, &AGCPlayerController::ChangeCrouchState);
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AGCPlayerController::StartSprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AGCPlayerController::StopSprint);
-	InputComponent->BindAction("Fire", IE_Pressed, this, &AGCPlayerController::Fire);
+	InputComponent->BindAction("Fire", IE_Pressed, this, &AGCPlayerController::PlayerStartFire);
+	InputComponent->BindAction("Fire", IE_Released, this, &AGCPlayerController::PlayerStopFire);
+	InputComponent->BindAction("Aim", IE_Pressed, this, &AGCPlayerController::StartAiming);
+	InputComponent->BindAction("Aim", IE_Released, this, &AGCPlayerController::StopAiming);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -166,10 +169,34 @@ void AGCPlayerController::SwimUp(float Value)
 	}
 }
 
-void AGCPlayerController::Fire()
+void AGCPlayerController::PlayerStartFire()
 {
 	if (CachedBaseCharacter.IsValid())
 	{
-		CachedBaseCharacter->Fire();
+		CachedBaseCharacter->StartFire();
+	}
+}
+
+void AGCPlayerController::PlayerStopFire()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StopFire();
+	}
+}
+
+void AGCPlayerController::StartAiming()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StartAiming();
+	}
+}
+
+void AGCPlayerController::StopAiming()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->StopAiming();
 	}
 }
