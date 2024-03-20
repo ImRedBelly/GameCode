@@ -17,9 +17,12 @@ const FName SocketWeaponForeGrip = FName("ForeGripSocket");
 const FName CollisionProfilePawnRagdoll = FName("Ragdoll");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
 
+const FName SectionMontageReloadEnd = FName("ReloadEnd");
+
 const FName DebugCategoryLedgeDetection = FName("LedgeDetection");
 const FName DebugCategoryCharacterAttributes = FName("CharacterAttributes");
 const FName DebugCategoryRangeWeapon = FName("RangeWeapon");
+
 
 UENUM(BlueprintType)
 enum class EEquipableItemType : uint8
@@ -36,6 +39,7 @@ enum class EAmmunitionType : uint8
 	None,
 	Pistol,
 	Rifle,
+	ShotgunShells,
 	MAX UMETA(Hidden)
 };
 
@@ -45,5 +49,13 @@ enum class EEquipmentSlots : uint8
 	None,
 	SideArm,
 	PrimaryWeapon,
+	SecondaryWeapon,
 	MAX UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
+enum class EReloadType : uint8
+{
+	FullClip,
+	ByBullet
 };

@@ -20,20 +20,26 @@ struct FDecalInfo
 	float DecalFadeOutTime = 5;
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GAMECODE_API UWeaponBarellComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
-public:	
-	void Shot(FVector ShotStart, FVector ShotDirection, AController* Controller);
+public:
+	void Shot(FVector ShotStart, FVector ShotDirection, AController* Controller, float SpreadAngle);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes")
 	float FiringRange = 5000.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes", meta= (UIMin = 1, ClampMin = 1))
+	int32 BulletsPerShot = 1;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
 	float DamageAmount = 20.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Damage")
+	TSubclassOf<UDamageType> DamageTypeClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | VFX")
 	UNiagaraSystem* MuzzleFlashFX;
@@ -42,5 +48,8 @@ protected:
 	UNiagaraSystem* TraceFX;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barell attributes | Decals")
-	FDecalInfo DefaultDecalInfo; 
+	FDecalInfo DefaultDecalInfo;
+
+private:
+	FVector GetBulletSpreadOffset(float Angle, FRotator ShotRotation);
 };

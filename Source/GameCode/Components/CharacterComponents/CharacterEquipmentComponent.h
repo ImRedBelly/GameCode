@@ -21,6 +21,8 @@ public:
 	EEquipableItemType GetCurrentEquippedItemType() const;
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
 	void ReloadCurrenWeapon();
+	void ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo = 0, bool bCheckIsFull = false);
+
 	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
 	void EquipItemInSlot(EEquipmentSlots Slot);
 	void UnEquipCurrentItem();

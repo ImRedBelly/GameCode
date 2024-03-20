@@ -56,6 +56,8 @@ protected:
 	UAnimMontage* WeaponFireMontage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Weapon")
 	UAnimMontage* WeaponReloadMontage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Weapon")
+	EReloadType ReloadType = EReloadType::FullClip;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Character")
 	UAnimMontage* CharacterFireMontage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Character")
@@ -82,7 +84,7 @@ protected:
 private:
 	float GetCurrentBulletSpreadAngle() const;
 	void MakeShot();
-	FVector GetBulletSpreadOffset(float Angle, FRotator ShotRotation);
+	void OnShotTimerElapsed();
 	float GetShotTimerInterval();
 	float PlayAnimMontage(UAnimMontage* AnimMontage);
 	void StopAnimMontage(UAnimMontage* AnimMontage, float BlendOutTime = 0);
@@ -90,6 +92,7 @@ private:
 	FTimerHandle ShotTimer;
 	FTimerHandle ReloadTimer;
 	bool bIsAiming = false;
+	bool bIsFiring = false;
 	bool bIsReloading = false;
 	int32 Ammo;
 };
