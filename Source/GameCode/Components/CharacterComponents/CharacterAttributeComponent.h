@@ -18,6 +18,7 @@ public:
 
 	FOnDeathEventSignature OnDeathEvent;
 	bool IsAlive() { return Health > 0; }
+	float GetHealthPercent() const;
 
 protected:
 	virtual void BeginPlay() override;

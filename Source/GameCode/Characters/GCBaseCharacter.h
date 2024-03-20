@@ -11,6 +11,8 @@
 class UGCBaseCharacterMovementComponent;
 class UCharacterEquipmentComponent;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAimingStateChanged, bool)
+
 USTRUCT(BlueprintType)
 struct FMantlingSettings
 {
@@ -100,6 +102,11 @@ public:
 	void StartAiming();
 	void StopAiming();
 
+	void NextItem();
+	void PreviousItem();
+	
+	void Reload();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
 	void OnStartAiming();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
@@ -110,6 +117,7 @@ public:
 	void Mantle(bool bForce = false);
 	bool CanMantling() const;
 	bool IsAiming() const;
+	FOnAimingStateChanged OnAimingStateChanged;
 	virtual void OnMantling(const FMantlingSettings& MantlingSettings, float MantlingAnimationStartTime);
 	virtual bool CanJumpInternal_Implementation() const override;
 
@@ -121,7 +129,10 @@ public:
 	virtual void Falling() override;
 	virtual void NotifyJumpApex() override;
 	virtual void Landed(const FHitResult& Hit) override;
+
+	UCharacterEquipmentComponent* GetCharacterEquipmentComponent_Mutable() const;
 	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
+	const UCharacterAttributeComponent* GetCharacterAttributeComponent() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category="Character|Movement")
@@ -148,8 +159,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling")
 	FMantlingSettings LowMantlingSettings;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling",
-		meta=(ClampMin=0.0f, UIMin = 0.0f))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling", meta=(ClampMin=0.0f, UIMin = 0.0f))
 	float LowMantleMaxHeight = 125.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Components")

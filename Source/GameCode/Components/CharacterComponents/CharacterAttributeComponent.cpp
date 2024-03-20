@@ -12,23 +12,24 @@ UCharacterAttributeComponent::UCharacterAttributeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+float UCharacterAttributeComponent::GetHealthPercent() const
+{
+	return Health / MaxHealth;
+}
+
 void UCharacterAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	checkf(GetOwner()->IsA<AGCBaseCharacter>(),
-	       TEXT(
-		       "UCharacterAttributesComponent::BeginPlay UCharacterAttributesComponent can be used only with AGCBaseCharacter"
-	       ));
+	checkf(MaxHealth > 0.0f, TEXT("UCharacterAttributesComponent::BeginPlay max health cannot be equal to 0"));
+	checkf(GetOwner()->IsA<AGCBaseCharacter>(), TEXT( "UCharacterAttributesComponent::BeginPlay UCharacterAttributesComponent can be used only with AGCBaseCharacter"));
 	CachedBaseCharacterOwner = StaticCast<AGCBaseCharacter*>(GetOwner());
 
 	Health = MaxHealth;
-
 	CachedBaseCharacterOwner->OnTakeAnyDamage.AddDynamic(this, &UCharacterAttributeComponent::OnTakeAnyDamage);
 }
 
 
-void UCharacterAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                                 FActorComponentTickFunction* ThisTickFunction)
+void UCharacterAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -37,11 +38,10 @@ void UCharacterAttributeComponent::TickComponent(float DeltaTime, ELevelTick Tic
 #endif
 }
 
-void UCharacterAttributeComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-                                                   AController* InstigatedBy, AActor* DamageCauser)
+void UCharacterAttributeComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (!IsAlive()) return;
-	
+
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
 	UE_LOG(LogDamage, Warning, TEXT("DAMAGE!!!"));
 	if (Health <= 0)

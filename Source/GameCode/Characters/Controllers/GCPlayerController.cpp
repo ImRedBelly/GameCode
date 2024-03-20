@@ -1,9 +1,12 @@
 #include "GCPlayerController.h"
 
+#include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
+
 void AGCPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AGCBaseCharacter>(InPawn);
+	CreateAndInitializeWidgets();
 }
 
 bool AGCPlayerController::GetIsIgnoreCameraPitch() const
@@ -19,6 +22,7 @@ void AGCPlayerController::SetIsIgnoreCameraPitch(bool bIgnoreCameraPitch_In)
 void AGCPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+
 	InputComponent->BindAxis("MoveForward", this, &AGCPlayerController::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AGCPlayerController::MoveRight);
 	InputComponent->BindAxis("Turn", this, &AGCPlayerController::Turn);
@@ -29,6 +33,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimRight", this, &AGCPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AGCPlayerController::SwimUp);
 	InputComponent->BindAxis("ClimbLadderUp", this, &AGCPlayerController::ClimbLadderUp);
+
 	InputComponent->BindAction("InteractWithLadder", IE_Pressed, this, &AGCPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", IE_Pressed, this, &AGCPlayerController::Mantle);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &AGCPlayerController::Jump);
@@ -39,6 +44,9 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Fire", IE_Released, this, &AGCPlayerController::PlayerStopFire);
 	InputComponent->BindAction("Aim", IE_Pressed, this, &AGCPlayerController::StartAiming);
 	InputComponent->BindAction("Aim", IE_Released, this, &AGCPlayerController::StopAiming);
+	InputComponent->BindAction("Reload", IE_Pressed, this, &AGCPlayerController::Reload);
+	InputComponent->BindAction("NextItem", IE_Pressed, this, &AGCPlayerController::NextItem);
+	InputComponent->BindAction("PreviousItem", IE_Pressed, this, &AGCPlayerController::PreviousItem);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -198,5 +206,56 @@ void AGCPlayerController::StopAiming()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->StopAiming();
+	}
+}
+
+void AGCPlayerController::NextItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->NextItem();
+	}
+}
+
+void AGCPlayerController::PreviousItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->PreviousItem();
+	}
+}
+
+void AGCPlayerController::Reload()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Reload();
+	}
+}
+
+void AGCPlayerController::CreateAndInitializeWidgets()
+{
+	if (!IsValid(PlayerHUDWidget))
+	{
+		PlayerHUDWidget = CreateWidget<UPlayerHUDWidget>(GetWorld(), PlayerHUDWidgetClass);
+		if (IsValid(PlayerHUDWidget))
+		{
+			PlayerHUDWidget->AddToViewport();
+		}
+	}
+
+	if (CachedBaseCharacter.IsValid() && IsValid(PlayerHUDWidget))
+	{
+		UReticleWidget* ReticleWidget = PlayerHUDWidget->GetReticleWidget();
+		if (IsValid(ReticleWidget))
+		{
+			CachedBaseCharacter->OnAimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
+		}
+		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();
+		if (IsValid(AmmoWidget))
+		{
+			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+			CharacterEquipmentComponent->OnCurrentWeaponAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateAmmoCount"));
+		}
 	}
 }

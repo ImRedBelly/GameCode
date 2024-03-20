@@ -67,6 +67,9 @@ void AGCBaseCharacter::StopSprint()
 
 void AGCBaseCharacter::StartFire()
 {
+	if (CharacterEquipmentComponent->GetIsEquipping())
+		return;
+
 	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
 	if (IsValid(CurrentRangeWeapon))
 		CurrentRangeWeapon->StartFire();
@@ -98,10 +101,26 @@ void AGCBaseCharacter::StopAiming()
 	ARangeWeaponItem* CurrentRangeWeapon = CharacterEquipmentComponent->GetCurrentRangeWeapon();
 	if (IsValid(CurrentRangeWeapon))
 		CurrentRangeWeapon->StopAiming();
-	
+
 	bIsAiming = false;
 	CurrentAimingMovementSpeed = 0;
 	OnStopAiming();
+}
+
+void AGCBaseCharacter::NextItem()
+{
+	CharacterEquipmentComponent->EquipNextItem();
+}
+
+void AGCBaseCharacter::PreviousItem()
+{
+	CharacterEquipmentComponent->EquipPreviousItem();
+}
+
+void AGCBaseCharacter::Reload()
+{
+	if (IsValid(CharacterEquipmentComponent->GetCurrentRangeWeapon()))
+		CharacterEquipmentComponent->ReloadCurrenWeapon();
 }
 
 void AGCBaseCharacter::OnStartAiming_Implementation()
@@ -245,9 +264,19 @@ void AGCBaseCharacter::Landed(const FHitResult& Hit)
 	}
 }
 
+UCharacterEquipmentComponent* AGCBaseCharacter::GetCharacterEquipmentComponent_Mutable() const
+{
+	return CharacterEquipmentComponent;
+}
+
 const UCharacterEquipmentComponent* AGCBaseCharacter::GetCharacterEquipmentComponent() const
 {
 	return CharacterEquipmentComponent;
+}
+
+const UCharacterAttributeComponent* AGCBaseCharacter::GetCharacterAttributeComponent() const
+{
+	return CharacterAttributeComponent;
 }
 
 bool AGCBaseCharacter::CanSprint()
@@ -267,10 +296,14 @@ void AGCBaseCharacter::OnDeath()
 
 void AGCBaseCharacter::OnStartAimingInternal()
 {
+	if (OnAimingStateChanged.IsBound())
+		OnAimingStateChanged.Broadcast(true);
 }
 
 void AGCBaseCharacter::OnStopAimingInternal()
 {
+	if (OnAimingStateChanged.IsBound())
+		OnAimingStateChanged.Broadcast(false);
 }
 
 void AGCBaseCharacter::TryChangeSprintState()

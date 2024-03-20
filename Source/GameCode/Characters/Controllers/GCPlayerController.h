@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
+#include "GameCode/UI/Widgets/PlayerHUDWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "GCPlayerController.generated.h"
 
@@ -17,6 +18,9 @@ public:
 	void SetIsIgnoreCameraPitch(bool bIgnoreCameraPitch_In);
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widgets")
+	TSubclassOf<UPlayerHUDWidget> PlayerHUDWidgetClass;
+
 	virtual void SetupInputComponent() override;
 
 private:
@@ -45,7 +49,15 @@ private:
 	void StartAiming();
 	void StopAiming();
 
+	void NextItem();
+	void PreviousItem();
+
+	void Reload();
+
+	void CreateAndInitializeWidgets();
+
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
 
+	UPlayerHUDWidget* PlayerHUDWidget;
 	bool bIsIgnoreCameraPitch = false;
 };
