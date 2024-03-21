@@ -47,6 +47,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Reload", IE_Pressed, this, &AGCPlayerController::Reload);
 	InputComponent->BindAction("NextItem", IE_Pressed, this, &AGCPlayerController::NextItem);
 	InputComponent->BindAction("PreviousItem", IE_Pressed, this, &AGCPlayerController::PreviousItem);
+	InputComponent->BindAction("EquipPrimaryItem", IE_Pressed, this, &AGCPlayerController::EquipPrimaryItem);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -222,6 +223,14 @@ void AGCPlayerController::PreviousItem()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->PreviousItem();
+	}
+}
+
+void AGCPlayerController::EquipPrimaryItem()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->EquipPrimaryItem();
 	}
 }
 

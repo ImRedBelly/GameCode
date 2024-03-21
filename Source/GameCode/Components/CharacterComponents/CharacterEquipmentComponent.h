@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameCode/GameCodeTypes.h"
+#include "GameCode/Actors/Equipment/Throwables/ThrowableItem.h"
 #include "GameCode/Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
 #include "CharacterEquipmentComponent.generated.h"
@@ -27,6 +28,7 @@ public:
 	void EquipItemInSlot(EEquipmentSlots Slot);
 	void UnEquipCurrentItem();
 	void AttachCurrentItemToEquippedSocket();
+	void LaunchCurrentThrowableItem();
 	void EquipNextItem();
 	void EquipPreviousItem();
 	bool GetIsEquipping() const;
@@ -38,10 +40,13 @@ protected:
 	TMap<EAmmunitionType, int32> MaxAmmunitionAmount;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Loadout")
 	TMap<EEquipmentSlots, TSubclassOf<AEquipableItem>> ItemsLoadout;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Loadout")
+	TSet<EEquipmentSlots> IgnoreSlotsWhileSwitching;
 
 private:
 	TAmmunitionArray AmmunitionArray;
 	TItemsArray ItemsArray;
+
 	UFUNCTION()
 	void OnWeaponReloadComplete();
 
@@ -51,12 +56,17 @@ private:
 	uint32 NextItemsArraySlotIndex(uint32 CurrentSlotIndex);
 	uint32 PreviousItemsArraySlotIndex(uint32 CurrentSlotIndex);
 	int32 GetAvailableAmmunitionForCurrentWeapon();
+
 	UFUNCTION()
 	void OnCurrentWeaponAmmoChanged(int32 NewAmmo);
-	EEquipmentSlots CurrentEquippedSlot;
-	AEquipableItem* CurrentEquippedItem;
 
+	EEquipmentSlots PreviousEquippedSlot;
+	EEquipmentSlots CurrentEquippedSlot;
+
+	AEquipableItem* CurrentEquippedItem;
 	ARangeWeaponItem* CurrentEquippedWeapon;
+	AThrowableItem* CurrentThrowableItem;
+
 	TWeakObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
 
 	FDelegateHandle OnCurrentWeaponAmmoChangedHandle;

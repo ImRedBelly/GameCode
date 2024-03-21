@@ -51,6 +51,7 @@ private:
 
 	void NextItem();
 	void PreviousItem();
+	void EquipPrimaryItem();
 
 	void Reload();
 

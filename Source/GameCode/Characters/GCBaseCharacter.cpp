@@ -117,6 +117,11 @@ void AGCBaseCharacter::PreviousItem()
 	CharacterEquipmentComponent->EquipPreviousItem();
 }
 
+void AGCBaseCharacter::EquipPrimaryItem()
+{
+	CharacterEquipmentComponent->EquipItemInSlot(EEquipmentSlots::PrimaryItem);
+}
+
 void AGCBaseCharacter::Reload()
 {
 	if (IsValid(CharacterEquipmentComponent->GetCurrentRangeWeapon()))

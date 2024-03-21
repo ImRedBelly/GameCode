@@ -19,3 +19,15 @@ UAnimMontage* AEquipableItem::GetCharacterEquipAnimMontage() const
 {
 	return CharacterEquipAnimMontage;
 }
+
+void AEquipableItem::Equip()
+{
+	if (OnEquipmentStateChanged.IsBound())
+		OnEquipmentStateChanged.Broadcast(true);
+}
+
+void AEquipableItem::UnEquip()
+{
+	if (OnEquipmentStateChanged.IsBound())
+		OnEquipmentStateChanged.Broadcast(false);
+}

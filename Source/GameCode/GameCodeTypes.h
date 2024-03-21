@@ -13,6 +13,7 @@ const FName SocketCharacterWeapon = FName("CharacterWeaponSocket");
 
 const FName SocketWeaponMuzzle = FName("MuzzleSocket");
 const FName SocketWeaponForeGrip = FName("ForeGripSocket");
+const FName SocketThrowable = FName("ThrowableSocket");
 
 const FName CollisionProfilePawnRagdoll = FName("Ragdoll");
 const FName CollisionProfilePawnInteractionVolume = FName("PawnInteractionVolume");
@@ -30,6 +31,7 @@ enum class EEquipableItemType : uint8
 	None,
 	Pistol,
 	Rifle,
+	Throwable,
 	MAX UMETA(Hidden)
 };
 
@@ -50,6 +52,7 @@ enum class EEquipmentSlots : uint8
 	SideArm,
 	PrimaryWeapon,
 	SecondaryWeapon,
+	PrimaryItem,
 	MAX UMETA(Hidden)
 };
 
