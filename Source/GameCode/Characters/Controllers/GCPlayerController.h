@@ -55,6 +55,9 @@ private:
 
 	void Reload();
 
+	void PrimaryMeleeAttack();
+	void SecondaryMeleeAttack();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;

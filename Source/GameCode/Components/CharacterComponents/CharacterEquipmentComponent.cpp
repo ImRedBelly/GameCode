@@ -5,9 +5,9 @@
 EEquipableItemType UCharacterEquipmentComponent::GetCurrentEquippedItemType() const
 {
 	EEquipableItemType Result = EEquipableItemType::None;
-	if (IsValid(CurrentEquippedWeapon))
+	if (IsValid(CurrentEquippedItem))
 	{
-		Result = CurrentEquippedWeapon->GetItemType();
+		Result = CurrentEquippedItem->GetItemType();
 	}
 	return Result;
 }
@@ -15,6 +15,11 @@ EEquipableItemType UCharacterEquipmentComponent::GetCurrentEquippedItemType() co
 ARangeWeaponItem* UCharacterEquipmentComponent::GetCurrentRangeWeapon() const
 {
 	return CurrentEquippedWeapon;
+}
+
+AMeleeWeaponItem* UCharacterEquipmentComponent::GetCurrentMeleeWeapon() const
+{
+	return CurrentMeleeWeapon;
 }
 
 void UCharacterEquipmentComponent::ReloadCurrenWeapon()
@@ -37,6 +42,7 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 	CurrentEquippedItem = ItemsArray[(uint32)Slot];
 	CurrentEquippedWeapon = Cast<ARangeWeaponItem>(CurrentEquippedItem);
 	CurrentThrowableItem = Cast<AThrowableItem>(CurrentEquippedItem);
+	CurrentMeleeWeapon = Cast<AMeleeWeaponItem>(CurrentEquippedItem);
 
 	if (IsValid(CurrentEquippedItem))
 	{
@@ -111,11 +117,9 @@ void UCharacterEquipmentComponent::EquipNextItem()
 {
 	uint32 CurrentSlotIndex = (uint32)CurrentEquippedSlot;
 	uint32 NextSlotIndex = NextItemsArraySlotIndex(CurrentSlotIndex);
-
-
 	while (CurrentSlotIndex != NextSlotIndex
-		&& IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)NextSlotIndex)
-		&& !IsValid(ItemsArray[NextSlotIndex]))
+		&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)NextSlotIndex)
+			|| !IsValid(ItemsArray[NextSlotIndex])))
 	{
 		NextSlotIndex = NextItemsArraySlotIndex(NextSlotIndex);
 
@@ -136,8 +140,8 @@ void UCharacterEquipmentComponent::EquipPreviousItem()
 	uint32 PreviousSlotIndex = PreviousItemsArraySlotIndex(CurrentSlotIndex);
 
 	while (CurrentSlotIndex != PreviousSlotIndex
-		&& IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)PreviousSlotIndex)
-		&& !IsValid(ItemsArray[PreviousSlotIndex]))
+		&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)PreviousSlotIndex)
+			|| !IsValid(ItemsArray[PreviousSlotIndex])))
 	{
 		PreviousSlotIndex = PreviousItemsArraySlotIndex(PreviousSlotIndex);
 
@@ -231,7 +235,10 @@ uint32 UCharacterEquipmentComponent::NextItemsArraySlotIndex(uint32 CurrentSlotI
 	{
 		return 0;
 	}
-	return CurrentSlotIndex + 1;
+	else
+	{
+		return CurrentSlotIndex + 1;
+	}
 }
 
 uint32 UCharacterEquipmentComponent::PreviousItemsArraySlotIndex(uint32 CurrentSlotIndex)
@@ -240,7 +247,10 @@ uint32 UCharacterEquipmentComponent::PreviousItemsArraySlotIndex(uint32 CurrentS
 	{
 		return ItemsArray.Num() - 1;
 	}
-	return CurrentSlotIndex - 1;
+	else
+	{
+		return CurrentSlotIndex - 1;
+	}
 }
 
 int32 UCharacterEquipmentComponent::GetAvailableAmmunitionForCurrentWeapon()

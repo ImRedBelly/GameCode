@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameCode/GameCodeTypes.h"
+#include "GameCode/Characters/GCBaseCharacter.h"
 #include "GameFramework/Actor.h"
 #include "EquipableItem.generated.h"
 
@@ -13,6 +14,8 @@ class GAMECODE_API AEquipableItem : public AActor
 	GENERATED_BODY()
 
 public:
+	virtual void SetOwner(AActor* NewOwner) override;
+
 	EEquipableItemType GetItemType() const;
 	FName GetUnEquippedSocketName() const;
 	FName GetEquippedSocketName() const;
@@ -40,4 +43,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reticle")
 	EReticleType ReticleType = EReticleType::None;
+
+	AGCBaseCharacter* GetCharacterOwner() const;
+
+private:
+	TWeakObjectPtr<AGCBaseCharacter> CachedCharacterOwner;
 };

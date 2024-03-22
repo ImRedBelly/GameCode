@@ -107,6 +107,9 @@ public:
 	void EquipPrimaryItem();
 	
 	void Reload();
+	
+	void PrimaryMeleeAttack();
+	void SecondaryMeleeAttack();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
 	void OnStartAiming();

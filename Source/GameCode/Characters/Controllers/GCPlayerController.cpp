@@ -47,7 +47,8 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Reload", IE_Pressed, this, &AGCPlayerController::Reload);
 	InputComponent->BindAction("NextItem", IE_Pressed, this, &AGCPlayerController::NextItem);
 	InputComponent->BindAction("PreviousItem", IE_Pressed, this, &AGCPlayerController::PreviousItem);
-	InputComponent->BindAction("EquipPrimaryItem", IE_Pressed, this, &AGCPlayerController::EquipPrimaryItem);
+	InputComponent->BindAction("PrimaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::PrimaryMeleeAttack);
+	InputComponent->BindAction("SecondaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::SecondaryMeleeAttack);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -239,6 +240,22 @@ void AGCPlayerController::Reload()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->Reload();
+	}
+}
+
+void AGCPlayerController::PrimaryMeleeAttack()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->PrimaryMeleeAttack();
+	}
+}
+
+void AGCPlayerController::SecondaryMeleeAttack()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SecondaryMeleeAttack();
 	}
 }
 

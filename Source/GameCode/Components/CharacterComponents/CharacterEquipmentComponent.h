@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Actors/Equipment/Throwables/ThrowableItem.h"
+#include "GameCode/Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "GameCode/Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
 #include "CharacterEquipmentComponent.generated.h"
@@ -22,6 +23,7 @@ class GAMECODE_API UCharacterEquipmentComponent : public UActorComponent
 public:
 	EEquipableItemType GetCurrentEquippedItemType() const;
 	ARangeWeaponItem* GetCurrentRangeWeapon() const;
+	AMeleeWeaponItem* GetCurrentMeleeWeapon() const;
 	void ReloadCurrenWeapon();
 	void ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo = 0, bool bCheckIsFull = false);
 
@@ -69,6 +71,7 @@ private:
 	AEquipableItem* CurrentEquippedItem;
 	ARangeWeaponItem* CurrentEquippedWeapon;
 	AThrowableItem* CurrentThrowableItem;
+	AMeleeWeaponItem* CurrentMeleeWeapon;
 
 	TWeakObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
 
