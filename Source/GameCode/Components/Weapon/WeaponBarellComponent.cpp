@@ -5,22 +5,16 @@
 #include "NiagaraComponent.h"
 #include "Components/DecalComponent.h"
 #include "GameCode/GameCodeTypes.h"
-#include "GameCode/Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "GameCode/SubSystems/DebugSubsystem.h"
 
-void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, AController* Controller, float SpreadAngle)
+
+void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, float SpreadAngle)
 {
+	FVector MuzzleLocation = GetComponentLocation();
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashFX, MuzzleLocation, GetComponentRotation());
+
 	for (int i = 0; i < BulletsPerShot; i++)
 	{
-		ShotDirection += GetBulletSpreadOffset(FMath::RandRange(0.0f, SpreadAngle), ShotDirection.ToOrientationRotator());
-
-		FVector MuzzleLocation = GetComponentLocation();
-		FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
-
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlashFX, MuzzleLocation, GetComponentRotation());
-
-		FHitResult ShotResult;
-
 #if ENABLE_DRAW_DEBUG
 		UDebugSubsystem* DebugSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UDebugSubsystem>();
 		bool bIsDebugEnable = DebugSubsystem->IsCategoryEnabled(DebugCategoryRangeWeapon);
@@ -28,30 +22,25 @@ void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, ACon
 	bool bIsDebugEnable = false;
 #endif
 
+		ShotDirection += GetBulletSpreadOffset(FMath::RandRange(0.0f, SpreadAngle), ShotDirection.ToOrientationRotator());
 
-		if (GetWorld()->LineTraceSingleByChannel(ShotResult, ShotStart, ShotEnd, ECC_Bullet))
+		FVector ShotEnd = ShotStart + FiringRange * ShotDirection;
+
+		switch (HitRegistration)
 		{
-			ShotEnd = ShotResult.ImpactPoint;
-			AActor* HitActor = ShotResult.GetActor();
-			if (IsValid(HitActor))
+		case EHitRegistrationType::HitScan:
 			{
-				FPointDamageEvent DamageEvent;
-				DamageEvent.HitInfo = ShotResult;
-				DamageEvent.ShotDirection = ShotDirection;
-				DamageEvent.DamageTypeClass = DamageTypeClass;
+				const bool bIsHit = HitScan(ShotStart, ShotEnd, ShotDirection);
 
-				HitActor->TakeDamage(DamageAmount, DamageEvent, Controller, GetOwner());
+				if (bIsDebugEnable && bIsHit)
+					DrawDebugSphere(GetWorld(), ShotEnd, 10, 24, FColor::Red, false, 1);
+				break;
 			}
-			UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(
-				GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize,
-				ShotResult.ImpactPoint, ShotResult.ImpactNormal.ToOrientationRotator());
-			if (IsValid(DecalComponent))
+		case EHitRegistrationType::Projectile:
 			{
-				DecalComponent->SetFadeScreenSize(0.001f);
-				DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
+				LaunchProjectile(ShotStart, ShotDirection);
+				break;
 			}
-			if (bIsDebugEnable)
-				DrawDebugSphere(GetWorld(), ShotEnd, 10, 24, FColor::Red, false, 1);
 		}
 
 
@@ -60,6 +49,51 @@ void UWeaponBarellComponent::Shot(FVector ShotStart, FVector ShotDirection, ACon
 		TraceFXComponent->SetVectorParameter(FXParamTraceEnd, ShotEnd);
 		if (bIsDebugEnable)
 			DrawDebugLine(GetWorld(), MuzzleLocation, ShotEnd, FColor::Red, false, 1, 0, 3);
+	}
+}
+
+void UWeaponBarellComponent::ProcessHit(const FHitResult& Hit, const FVector& Direction)
+{
+	AActor* HitActor = Hit.GetActor();
+	if (IsValid(HitActor))
+	{
+		FPointDamageEvent DamageEvent;
+		DamageEvent.HitInfo = Hit;
+		DamageEvent.ShotDirection = Direction;
+		DamageEvent.DamageTypeClass = DamageTypeClass;
+
+		HitActor->TakeDamage(DamageAmount, DamageEvent, GetController(), GetOwner());
+	}
+	UDecalComponent* DecalComponent = UGameplayStatics::SpawnDecalAtLocation(
+		GetWorld(), DefaultDecalInfo.DecalMaterial, DefaultDecalInfo.DecalSize,
+		Hit.ImpactPoint, Hit.ImpactNormal.ToOrientationRotator());
+	if (IsValid(DecalComponent))
+	{
+		DecalComponent->SetFadeScreenSize(0.001f);
+		DecalComponent->SetFadeOut(DefaultDecalInfo.DecalLifeTime, DefaultDecalInfo.DecalFadeOutTime);
+	}
+}
+
+bool UWeaponBarellComponent::HitScan(FVector ShotStart, OUT FVector& ShotEnd, FVector ShotDirection)
+{
+	FHitResult ShotResult;
+	bool bIsHit = GetWorld()->LineTraceSingleByChannel(ShotResult, ShotStart, ShotEnd, ECC_Bullet);
+	if (bIsHit)
+	{
+		ShotEnd = ShotResult.ImpactPoint;
+		ProcessHit(ShotResult, ShotDirection);
+	}
+	return bIsHit;
+}
+
+void UWeaponBarellComponent::LaunchProjectile(const FVector& LaunchStart, const FVector& LaunchDirection)
+{
+	AGCProjectile* Projectile = GetWorld()->SpawnActor<AGCProjectile>(ProjectileClass, LaunchStart, LaunchDirection.ToOrientationRotator());
+	if (IsValid(Projectile))
+	{
+		Projectile->SetOwner(GetOwningPawn());
+		Projectile->OnProjectileHit.AddDynamic(this, &UWeaponBarellComponent::ProcessHit);
+		Projectile->LaunchProjectile(LaunchDirection.GetSafeNormal());
 	}
 }
 
@@ -75,4 +109,20 @@ FVector UWeaponBarellComponent::GetBulletSpreadOffset(float Angle, FRotator Shot
 		+ ShotRotation.RotateVector(FVector::RightVector) * SpreadY) * SpreadSize;
 
 	return Result;
+}
+
+APawn* UWeaponBarellComponent::GetOwningPawn() const
+{
+	APawn* PawnOwner = Cast<APawn>(GetOwner());
+	if (!IsValid(PawnOwner))
+	{
+		PawnOwner = Cast<APawn>(GetOwner()->GetOwner());
+	}
+	return PawnOwner;
+}
+
+AController* UWeaponBarellComponent::GetController() const
+{
+	const APawn* PawnOwner = GetOwningPawn();
+	return IsValid(PawnOwner) ? PawnOwner->GetController() : nullptr;
 }

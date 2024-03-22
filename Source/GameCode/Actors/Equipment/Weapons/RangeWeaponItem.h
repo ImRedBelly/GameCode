@@ -44,6 +44,7 @@ public:
 
 	FOnAmmoChanged OnAmmoChanged;
 	FOnReloadComplete OnReloadComplete;
+	virtual EReticleType GetReticleType() const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -80,6 +81,10 @@ protected:
 	int32 MaxAmmo = 30;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Ammo")
 	bool bAutoReload = true;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reticle")
+	EReticleType AimReticleType = EReticleType::Default;
 
 private:
 	float GetCurrentBulletSpreadAngle() const;

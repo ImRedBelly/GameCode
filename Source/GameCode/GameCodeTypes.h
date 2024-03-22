@@ -62,3 +62,12 @@ enum class EReloadType : uint8
 	FullClip,
 	ByBullet
 };
+
+UENUM(BlueprintType)
+enum class EReticleType : uint8
+{
+	None,
+	Default,
+	SniperRifle,
+	MAX UMETA(Hidden)
+};

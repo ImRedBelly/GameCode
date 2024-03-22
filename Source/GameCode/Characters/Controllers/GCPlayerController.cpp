@@ -259,6 +259,8 @@ void AGCPlayerController::CreateAndInitializeWidgets()
 		if (IsValid(ReticleWidget))
 		{
 			CachedBaseCharacter->OnAimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
+			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
+			CharacterEquipmentComponent->OnEquippedItemChanged.AddUFunction(ReticleWidget, FName("OnEquippedItemChange"));
 		}
 		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();
 		if (IsValid(AmmoWidget))

@@ -61,6 +61,9 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 		OnCurrentWeaponReloadedHandle = CurrentEquippedWeapon->OnReloadComplete.AddUFunction(this, FName("OnWeaponReloadComplete"));
 		OnCurrentWeaponAmmoChanged(CurrentEquippedWeapon->GetAmmo());
 	}
+
+	if (OnEquippedItemChanged.IsBound())
+		OnEquippedItemChanged.Broadcast(CurrentEquippedItem);
 }
 
 void UCharacterEquipmentComponent::UnEquipCurrentItem()

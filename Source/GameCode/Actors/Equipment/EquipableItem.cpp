@@ -20,6 +20,11 @@ UAnimMontage* AEquipableItem::GetCharacterEquipAnimMontage() const
 	return CharacterEquipAnimMontage;
 }
 
+EReticleType AEquipableItem::GetReticleType() const
+{
+	return ReticleType;
+}
+
 void AEquipableItem::Equip()
 {
 	if (OnEquipmentStateChanged.IsBound())

@@ -17,6 +17,7 @@ public:
 	FName GetUnEquippedSocketName() const;
 	FName GetEquippedSocketName() const;
 	UAnimMontage* GetCharacterEquipAnimMontage() const;
+	virtual EReticleType GetReticleType() const;
 
 	virtual void Equip();
 	virtual void UnEquip();
@@ -36,4 +37,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Equipable item")
 	FName EquippedSocketName = NAME_None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reticle")
+	EReticleType ReticleType = EReticleType::None;
 };
