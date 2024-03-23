@@ -20,6 +20,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer)
 
 	GetCharacterMovement()->bOrientRotationToMovement = 1;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+	Team = ETeams::Player;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -30,7 +31,6 @@ void APlayerCharacter::MoveForward(float Value)
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector ForwardVector = YawRotator.RotateVector(FVector::ForwardVector);
 		AddMovementInput(ForwardVector, Value);
-		//	AddMovementInput(GetActorForwardVector(), Value);
 	}
 }
 
@@ -42,7 +42,6 @@ void APlayerCharacter::MoveRight(float Value)
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector RightVector = YawRotator.RotateVector(FVector::RightVector);
 		AddMovementInput(RightVector, Value);
-		//AddMovementInput(GetActorRightVector(), Value);
 	}
 }
 

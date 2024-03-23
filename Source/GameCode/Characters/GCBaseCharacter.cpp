@@ -1,5 +1,6 @@
 #include "GCBaseCharacter.h"
 
+#include "AIController.h"
 #include "Curves/CurveVector.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
@@ -29,6 +30,17 @@ void AGCBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	TryChangeSprintState();
+}
+
+void AGCBaseCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AAIController* AIController = Cast<AAIController>(NewController);
+	if (IsValid(AIController))
+	{
+		FGenericTeamId TeamId((uint8)Team);
+		AIController->SetGenericTeamId(TeamId);
+	}
 }
 
 void AGCBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
@@ -144,6 +156,11 @@ void AGCBaseCharacter::SecondaryMeleeAttack()
 	{
 		CurrentMeleeWeapon->StartAttack(EMeleeAttackType::Secondary);
 	}
+}
+
+FGenericTeamId AGCBaseCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId((uint8)Team);
 }
 
 void AGCBaseCharacter::OnStartAiming_Implementation()

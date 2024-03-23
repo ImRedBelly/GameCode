@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GenericTeamAgentInterface.h"
+#include "GameCode/GameCodeTypes.h"
 #include "GameCode/Actors/Interactive/InteractiveActor.h"
 #include "GameCode/Actors/Interactive/Environment/Ladder.h"
 #include "GameCode/Components/LedgeDetectorComponent.h"
@@ -39,7 +41,7 @@ struct FMantlingSettings
 
 
 UCLASS(Abstract, NotBlueprintable)
-class GAMECODE_API AGCBaseCharacter : public ACharacter
+class GAMECODE_API AGCBaseCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -48,6 +50,8 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void PossessedBy(AController* NewController) override;
+
 	FORCEINLINE UGCBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() const
 	{
 		return GCBaseCharacterMovementComponent;
@@ -105,11 +109,13 @@ public:
 	void NextItem();
 	void PreviousItem();
 	void EquipPrimaryItem();
-	
+
 	void Reload();
-	
+
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
+
+	FGenericTeamId GetGenericTeamId() const override;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Character")
 	void OnStartAiming();
@@ -153,8 +159,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character|Movement")
 	float SprintSpeed = 800.0f;
 
-
-	UGCBaseCharacterMovementComponent* GCBaseCharacterMovementComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Movement")
 	ULedgeDetectorComponent* LedgeDetectorComponent;
 
@@ -163,6 +167,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling")
 	FMantlingSettings LowMantlingSettings;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling", meta=(ClampMin=0.0f, UIMin = 0.0f))
 	float LowMantleMaxHeight = 125.0f;
 
@@ -172,6 +177,7 @@ protected:
 	virtual void OnDeath();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Animations")
 	UAnimMontage* OnDeathAnimMontage;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Attributes")
 	UCurveFloat* FallDamageCurve;
 
@@ -181,7 +187,12 @@ protected:
 	virtual void OnStartAimingInternal();
 	virtual void OnStopAimingInternal();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character | Team")
+	ETeams Team = ETeams::Enemy;
+
 private:
+	UGCBaseCharacterMovementComponent* GCBaseCharacterMovementComponent;
+
 	void TryChangeSprintState();
 	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 	bool bIsSprintRequested = false;
