@@ -1,13 +1,12 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GCAIController.h"
-#include "GCAICharacterController.generated.h"
-
-class AGCAICharacter;
+#include "GameCode/AI/Characters/GCAICharacter.h"
+#include "AICharacterController.generated.h"
 
 UCLASS()
-class GAMECODE_API AGCAICharacterController : public AGCAIController
+class GAMECODE_API AAICharacterController : public AGCAIController
 {
 	GENERATED_BODY()
 

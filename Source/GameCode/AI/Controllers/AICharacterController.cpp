@@ -1,8 +1,9 @@
-#include "GCAICharacterController.h"
-#include "Perception/AISense_Sight.h"
-#include "GameCode/AI/Characters/GCAICharacter.h"
+﻿#include "AICharacterController.h"
 
-void AGCAICharacterController::SetPawn(APawn* InPawn)
+#include "Perception/AISense_Sight.h"
+
+
+void AAICharacterController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	if (IsValid(InPawn))
@@ -16,7 +17,7 @@ void AGCAICharacterController::SetPawn(APawn* InPawn)
 	}
 }
 
-void AGCAICharacterController::ActorsPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
+void AAICharacterController::ActorsPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 {
 	Super::ActorsPerceptionUpdated(UpdatedActors);
 	if (!CachedCharacter.IsValid())
@@ -25,7 +26,7 @@ void AGCAICharacterController::ActorsPerceptionUpdated(const TArray<AActor*>& Up
 	TryMoveToNextTarget();
 }
 
-void AGCAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+void AAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
 	if (!Result.IsSuccess())
@@ -34,7 +35,7 @@ void AGCAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FPa
 	TryMoveToNextTarget();
 }
 
-void AGCAICharacterController::BeginPlay()
+void AAICharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 	UAIPatrollingComponent* PatrollingComponent = CachedCharacter->GetPatrollingComponent();
@@ -46,7 +47,7 @@ void AGCAICharacterController::BeginPlay()
 	}
 }
 
-void AGCAICharacterController::TryMoveToNextTarget()
+void AAICharacterController::TryMoveToNextTarget()
 {
 	AActor* ClosestActor = GetClosestSensedActor(UAISense_Sight::StaticClass());
 	UAIPatrollingComponent* PatrollingComponent = CachedCharacter->GetPatrollingComponent();
@@ -67,7 +68,7 @@ void AGCAICharacterController::TryMoveToNextTarget()
 	}
 }
 
-bool AGCAICharacterController::IsTargetReached(FVector TargetLocation) const
+bool AAICharacterController::IsTargetReached(FVector TargetLocation) const
 {
 	return (TargetLocation - CachedCharacter->GetActorLocation()).SizeSquared() <= FMath::Square(TargetReachedRadius);
 }
