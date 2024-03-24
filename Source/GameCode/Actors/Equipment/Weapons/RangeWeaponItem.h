@@ -25,6 +25,8 @@ public:
 	ARangeWeaponItem();
 	void StartFire();
 	void StopFire();
+	bool IsFiring() const;
+	bool IsReloading() const;
 
 	void StartAiming();
 	void StopAiming();
@@ -51,34 +53,49 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	UWeaponBarellComponent* WeaponBarell;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Weapon")
 	UAnimMontage* WeaponFireMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Weapon")
 	UAnimMontage* WeaponReloadMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Weapon")
 	EReloadType ReloadType = EReloadType::FullClip;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Character")
 	UAnimMontage* CharacterFireMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Animations|Character")
 	UAnimMontage* CharacterReloadMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters")
 	EWeaponFireMode WeaponFireMode = EWeaponFireMode::Single;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters", meta = (ClampMin = 1, UIMin = 1))
 	float RateOfFire = 600.0f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters", meta = (ClampMin = 0, ClampMax = 2, UIMin = 0, UIMax = 2))
 	float SpreadAngle = 1.0f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Aiming", meta = (ClampMin = 0, ClampMax = 2, UIMin = 0, UIMax = 2))
 	float AimSpreadAngle = 0.25f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Aiming", meta = (ClampMin = 0, UIMin = 0))
 	float AimMovementMaxSpeed = 200;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Aiming", meta = (ClampMin = 0, ClampMax = 120, UIMin = 0, UIMax = 120))
 	float AimFOV = 60;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Ammo")
 	EAmmunitionType AmmoType;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Ammo", meta = (ClampMin = 1, UIMin = 1))
 	int32 MaxAmmo = 30;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon|Parameters|Ammo")
 	bool bAutoReload = true;
 

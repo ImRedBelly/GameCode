@@ -29,7 +29,7 @@ public:
 
 	FOnCurrentWeaponAmmoChanged OnCurrentWeaponAmmoChangedEvent;
 	FOnEquippedItemChanged OnEquippedItemChanged;
-	
+
 	void EquipItemInSlot(EEquipmentSlots Slot);
 	void UnEquipCurrentItem();
 	void AttachCurrentItemToEquippedSocket();
@@ -43,10 +43,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Loadout")
 	TMap<EAmmunitionType, int32> MaxAmmunitionAmount;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Loadout")
 	TMap<EEquipmentSlots, TSubclassOf<AEquipableItem>> ItemsLoadout;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Loadout")
 	TSet<EEquipmentSlots> IgnoreSlotsWhileSwitching;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Loadout")
+	EEquipmentSlots AutoEquipItemInSlot = EEquipmentSlots::None;
 
 private:
 	TAmmunitionArray AmmunitionArray;
@@ -56,6 +61,7 @@ private:
 	void OnWeaponReloadComplete();
 
 	void CreateLoadout();
+	void AutoEquip();
 	void EquipAnimationFinished();
 
 	uint32 NextItemsArraySlotIndex(uint32 CurrentSlotIndex);
