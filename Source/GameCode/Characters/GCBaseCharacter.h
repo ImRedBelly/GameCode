@@ -124,6 +124,7 @@ public:
 
 	float GetAimingMovementSpeed() const;
 
+	UFUNCTION(BlueprintCallable)
 	void Mantle(bool bForce = false);
 	bool CanMantling() const;
 	bool IsAiming() const;
