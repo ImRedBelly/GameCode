@@ -1,12 +1,18 @@
 #include "GCPlayerController.h"
 
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include "GameFramework/PlayerInput.h"
 
 void AGCPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AGCBaseCharacter>(InPawn);
 	CreateAndInitializeWidgets();
+
+	if (CachedBaseCharacter.IsValid() && IsLocalController())
+	{
+		CachedBaseCharacter->OnInteractableObjectFound.BindUObject(this, &AGCPlayerController::OnInteractableObjectFound);
+	}
 }
 
 bool AGCPlayerController::GetIsIgnoreCameraPitch() const
@@ -49,6 +55,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("PreviousItem", IE_Pressed, this, &AGCPlayerController::PreviousItem);
 	InputComponent->BindAction("PrimaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::PrimaryMeleeAttack);
 	InputComponent->BindAction("SecondaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::SecondaryMeleeAttack);
+	InputComponent->BindAction(ActionInteract, IE_Pressed, this, &AGCPlayerController::Interact);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -256,6 +263,29 @@ void AGCPlayerController::SecondaryMeleeAttack()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->SecondaryMeleeAttack();
+	}
+}
+
+void AGCPlayerController::OnInteractableObjectFound(FName ActionName)
+{
+	if (!IsValid(PlayerHUDWidget))
+		return;
+
+	TArray<FInputActionKeyMapping> ActionKeys = PlayerInput->GetKeysForAction(ActionName);
+	const bool HasAnyKeys = ActionKeys.Num() != 0;
+	if (HasAnyKeys)
+	{
+		FName ActionKey = ActionKeys[0].Key.GetFName();
+		PlayerHUDWidget->SetHightlightInteractableActionName(ActionKey);
+	}
+	PlayerHUDWidget->SetHightlightInteractableVisibility(HasAnyKeys);
+}
+
+void AGCPlayerController::Interact()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Interact();
 	}
 }
 

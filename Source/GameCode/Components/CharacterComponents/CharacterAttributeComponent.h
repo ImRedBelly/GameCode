@@ -5,6 +5,7 @@
 #include "CharacterAttributeComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnDeathEventSignature)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GAMECODE_API UCharacterAttributeComponent : public UActorComponent
@@ -17,6 +18,8 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	FOnDeathEventSignature OnDeathEvent;
+	FOnHealthChanged OnHealthChangedEvent;
+	
 	bool IsAlive() { return Health > 0; }
 	float GetHealthPercent() const;
 

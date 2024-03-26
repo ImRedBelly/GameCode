@@ -29,7 +29,7 @@ void UCharacterAttributeComponent::BeginPlay()
 }
 
 
-void UCharacterAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
+void UCharacterAttributeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -43,12 +43,14 @@ void UCharacterAttributeComponent::OnTakeAnyDamage(AActor* DamagedActor, float D
 	if (!IsAlive()) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
-	UE_LOG(LogDamage, Warning, TEXT("DAMAGE!!!"));
+
+	if (OnHealthChangedEvent.IsBound())
+		OnHealthChangedEvent.Broadcast(GetHealthPercent());
+
 	if (Health <= 0)
 	{
 		if (OnDeathEvent.IsBound())
 		{
-			UE_LOG(LogDamage, Warning, TEXT("Death"));
 			OnDeathEvent.Broadcast();
 		}
 	}

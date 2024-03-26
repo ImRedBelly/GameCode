@@ -1,12 +1,13 @@
 #include "GCBaseCharacter.h"
 
 #include "AIController.h"
+#include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
-
+#include "GameCode/UI/Widgets/World/GCAttributeProgressBar.h"
 
 AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer.SetDefaultSubobjectClass<UGCBaseCharacterMovementComponent>(CharacterMovementComponentName))
@@ -18,18 +19,30 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 
 	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeComponent>(TEXT("CharacterAttribute"));
 	CharacterEquipmentComponent = CreateDefaultSubobject<UCharacterEquipmentComponent>(TEXT("CharacterEquipment"));
+
+	HealthBarProgressComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarProgressComponent"));
+	HealthBarProgressComponent->SetupAttachment(GetCapsuleComponent());
 }
 
 void AGCBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CharacterAttributeComponent->OnDeathEvent.AddUObject(this, &AGCBaseCharacter::OnDeath);
+	InitializeHealthProgress();
+}
+
+void AGCBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (OnInteractableObjectFound.IsBound())
+		OnInteractableObjectFound.Unbind();
+	Super::EndPlay(EndPlayReason);
 }
 
 void AGCBaseCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	TryChangeSprintState();
+	TraceLineOfSight();
 }
 
 void AGCBaseCharacter::PossessedBy(AController* NewController)
@@ -156,6 +169,28 @@ void AGCBaseCharacter::SecondaryMeleeAttack()
 	{
 		CurrentMeleeWeapon->StartAttack(EMeleeAttackType::Secondary);
 	}
+}
+
+void AGCBaseCharacter::Interact()
+{
+	if (LineOfSightObject.GetInterface())
+		LineOfSightObject->Interact(this);
+}
+
+void AGCBaseCharacter::InitializeHealthProgress()
+{
+	UGCAttributeProgressBar* Widget = Cast<UGCAttributeProgressBar>(HealthBarProgressComponent->GetUserWidgetObject());
+	if (!IsValid(Widget))
+	{
+		HealthBarProgressComponent->SetVisibility(false);
+		return;
+	}
+	if (IsPlayerControlled() && IsLocallyControlled())
+		HealthBarProgressComponent->SetVisibility(false);
+
+	CharacterAttributeComponent->OnHealthChangedEvent.AddUObject(Widget, &UGCAttributeProgressBar::SetProgressPercentage);
+	CharacterAttributeComponent->OnDeathEvent.AddLambda([=] { HealthBarProgressComponent->SetVisibility(false); });
+	Widget->SetProgressPercentage(CharacterAttributeComponent->GetHealthPercent());
 }
 
 FGenericTeamId AGCBaseCharacter::GetGenericTeamId() const
@@ -344,6 +379,40 @@ void AGCBaseCharacter::OnStopAimingInternal()
 {
 	if (OnAimingStateChanged.IsBound())
 		OnAimingStateChanged.Broadcast(false);
+}
+
+void AGCBaseCharacter::TraceLineOfSight()
+{
+	if (!IsPlayerControlled())
+		return;
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+
+	FVector ViewDirection = ViewRotation.Vector();
+	FVector TraceEnd = ViewLocation + ViewDirection * LineOfSightDistance;
+
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, ViewLocation, TraceEnd, ECC_Visibility);
+	if (LineOfSightObject.GetObject() != HitResult.Actor)
+	{
+		LineOfSightObject = HitResult.Actor.Get();
+
+		FName ActionName;
+		if (LineOfSightObject.GetInterface())
+		{
+			ActionName = LineOfSightObject->GetActionEventName();
+		}
+		else
+		{
+			ActionName = NAME_None;
+		}
+
+		OnInteractableObjectFound.ExecuteIfBound(ActionName);
+	}
 }
 
 void AGCBaseCharacter::TryChangeSprintState()

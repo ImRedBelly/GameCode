@@ -2,9 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
+#include "Components/WidgetComponent.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Actors/Interactive/InteractiveActor.h"
 #include "GameCode/Actors/Interactive/Environment/Ladder.h"
+#include "GameCode/Actors/Interactive/Interface/IInteractable.h"
 #include "GameCode/Components/LedgeDetectorComponent.h"
 #include "GameCode/Components/CharacterComponents/CharacterAttributeComponent.h"
 #include "GameFramework/Character.h"
@@ -14,6 +16,7 @@ class UGCBaseCharacterMovementComponent;
 class UCharacterEquipmentComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAimingStateChanged, bool)
+DECLARE_DELEGATE_OneParam(FOnInteractableObjectFound, FName);
 
 USTRUCT(BlueprintType)
 struct FMantlingSettings
@@ -49,6 +52,7 @@ public:
 	AGCBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -114,6 +118,13 @@ public:
 
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
+
+	void Interact();
+	FOnInteractableObjectFound OnInteractableObjectFound;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Character| Components")
+	UWidgetComponent* HealthBarProgressComponent;
+	void InitializeHealthProgress();
 
 	FGenericTeamId GetGenericTeamId() const override;
 
@@ -190,6 +201,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character | Team")
 	ETeams Team = ETeams::Enemy;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character | Sight")
+	float LineOfSightDistance = 500;
+
+	void TraceLineOfSight();
+
+	UPROPERTY()
+	TScriptInterface<IInteractable> LineOfSightObject;
 
 private:
 	UGCBaseCharacterMovementComponent* GCBaseCharacterMovementComponent;

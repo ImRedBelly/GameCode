@@ -11,6 +11,7 @@ void AAICharacterController::SetPawn(APawn* InPawn)
 		checkf(InPawn->IsA<AGCAICharacter>(), TEXT("AGCAICharacterController::SetPawn() AICharacterController can possess only GCAIACharacter"));
 		CachedCharacter = StaticCast<AGCAICharacter*>(InPawn);
 		RunBehaviorTree(CachedCharacter->GetBehaviorTree());
+		SetupPatrolling();
 	}
 	else
 	{
@@ -36,9 +37,8 @@ void AAICharacterController::OnMoveCompleted(FAIRequestID RequestID, const FPath
 	TryMoveToNextTarget();
 }
 
-void AAICharacterController::BeginPlay()
+void AAICharacterController::SetupPatrolling()
 {
-	Super::BeginPlay();
 	UAIPatrollingComponent* PatrollingComponent = CachedCharacter->GetPatrollingComponent();
 	if (PatrollingComponent->CanPatrol())
 	{

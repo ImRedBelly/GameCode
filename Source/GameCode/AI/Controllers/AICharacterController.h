@@ -14,12 +14,11 @@ public:
 	virtual void SetPawn(APawn* InPawn) override;
 	virtual void ActorsPerceptionUpdated(const TArray<AActor*>& UpdatedActors) override;
 	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+	void SetupPatrolling();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement")
 	float TargetReachedRadius = 100;
-
-	virtual void BeginPlay() override;
 
 private:
 	TWeakObjectPtr<AGCAICharacter> CachedCharacter;

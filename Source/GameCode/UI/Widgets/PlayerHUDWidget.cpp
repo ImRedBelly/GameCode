@@ -14,6 +14,18 @@ UAmmoWidget* UPlayerHUDWidget::GetAmmoWidget()
 	return WidgetTree->FindWidget<UAmmoWidget>(AmmoWidgetName);
 }
 
+void UPlayerHUDWidget::SetHightlightInteractableVisibility(bool bIsVisible)
+{
+	if (IsValid(InteractableKey))
+		InteractableKey->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+}
+
+void UPlayerHUDWidget::SetHightlightInteractableActionName(FName KeyName)
+{
+	if (IsValid(InteractableKey))
+		InteractableKey->SetActionText(KeyName);
+}
+
 float UPlayerHUDWidget::GetHealthPercent() const
 {
 	float Result = 1;

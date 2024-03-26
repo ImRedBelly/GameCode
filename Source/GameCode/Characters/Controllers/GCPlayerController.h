@@ -58,6 +58,9 @@ private:
 	void PrimaryMeleeAttack();
 	void SecondaryMeleeAttack();
 
+	void OnInteractableObjectFound(FName ActionName);
+	void Interact();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;
