@@ -2,8 +2,6 @@
 
 void UInventoryItem::Initialize(FName DataTableID_In, const FInventoryItemDescription& Description_In)
 {
-	
-	
 	DataTableID = DataTableID_In;
 	Description.Icon = Description_In.Icon;
 	Description.Name = Description_In.Name;

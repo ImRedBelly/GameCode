@@ -7,7 +7,10 @@
 #include "GameCode/Actors/Equipment/Weapons/MeleeWeaponItem.h"
 #include "GameCode/Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
+#include "GameCode/UI/Widgets/Equipment/EquipmentViewWidget.h"
 #include "CharacterEquipmentComponent.generated.h"
+
+class UEquipmentViewWidget;
 
 typedef TArray<AEquipableItem*, TInlineAllocator<(uint32)EEquipmentSlots::MAX>> TItemsArray;
 typedef TArray<uint32, TInlineAllocator<(uint32)EAmmunitionType::MAX>> TAmmunitionArray;
@@ -38,7 +41,14 @@ public:
 	void EquipPreviousItem();
 	bool GetIsEquipping() const;
 
-	void AddEquipmentItem(const TSubclassOf<AEquipableItem> EquipableItemClass);
+	bool AddEquipmentItemToSlot(const TSubclassOf<AEquipableItem> EquipableItemClass, int32 SlotIndex);
+	void RemoveItemFromSlot(uint32 SlotIndex);
+
+	void OpenViewEquipment(APlayerController* PlayerController);
+	void CloseViewEquipment();
+	bool IsViewVisible() const;
+
+	const TArray<AEquipableItem*>& GetItems() const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -55,9 +65,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Loadout")
 	EEquipmentSlots AutoEquipItemInSlot = EEquipmentSlots::None;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="View")
+	TSubclassOf<UEquipmentViewWidget> ViewWidgetClass;
+
+
+	void CreateViewWidget(APlayerController* PlayerController);
+
 private:
 	TAmmunitionArray AmmunitionArray;
-	TItemsArray ItemsArray;
+	TArray<AEquipableItem*> ItemsArray;
 
 	UFUNCTION()
 	void OnWeaponReloadComplete();
@@ -88,4 +104,6 @@ private:
 
 	bool bIsEquipping = false;
 	FTimerHandle EquipTimer;
+
+	UEquipmentViewWidget* ViewWidget;
 };

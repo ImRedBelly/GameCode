@@ -37,6 +37,11 @@ EReticleType AEquipableItem::GetReticleType() const
 	return ReticleType;
 }
 
+bool AEquipableItem::IsSlotCompatable(EEquipmentSlots Slot)
+{
+	return CompatableEquipmentSlots.Contains(Slot);
+}
+
 void AEquipableItem::Equip()
 {
 	if (OnEquipmentStateChanged.IsBound())
@@ -47,6 +52,11 @@ void AEquipableItem::UnEquip()
 {
 	if (OnEquipmentStateChanged.IsBound())
 		OnEquipmentStateChanged.Broadcast(false);
+}
+
+FName AEquipableItem::GetDataTableID() const
+{
+	return DataTableID;
 }
 
 AGCBaseCharacter* AEquipableItem::GetCharacterOwner() const

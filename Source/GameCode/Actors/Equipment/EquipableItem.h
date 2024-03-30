@@ -21,9 +21,13 @@ public:
 	FName GetEquippedSocketName() const;
 	UAnimMontage* GetCharacterEquipAnimMontage() const;
 	virtual EReticleType GetReticleType() const;
+	
+	bool IsSlotCompatable(EEquipmentSlots Slot);
 
 	virtual void Equip();
 	virtual void UnEquip();
+
+	FName GetDataTableID() const;
 
 protected:
 	UPROPERTY(BlueprintAssignable)
@@ -40,6 +44,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Equipable item")
 	FName EquippedSocketName = NAME_None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Equipable item")
+	TArray<EEquipmentSlots> CompatableEquipmentSlots;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reticle")
 	EReticleType ReticleType = EReticleType::None;

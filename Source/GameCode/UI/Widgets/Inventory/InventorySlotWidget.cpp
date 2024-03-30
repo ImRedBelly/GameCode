@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "InventorySlotWidget.h"
 #include "GameCode/Components/CharacterComponents/CharacterInventoryComponent.h"
 #include "GameCode/Inventory/Items/InventoryItem.h"
@@ -69,7 +66,6 @@ void UInventorySlotWidget::NativeOnDragDetected(const FGeometry& InGeometry, con
 {
 	UDragDropOperation* DragOperation = Cast<UDragDropOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UDragDropOperation::StaticClass()));
 
-	/* Some simplification for not define new widget for drag and drop operation  */
 	UInventorySlotWidget* DragWidget = CreateWidget<UInventorySlotWidget>(GetOwningPlayer(), GetClass());
 	DragWidget->ImageItemIcon->SetBrushFromTexture(LinkedSlot->Item->GetDescription().Icon);
 
