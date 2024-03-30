@@ -115,44 +115,74 @@ void UCharacterEquipmentComponent::LaunchCurrentThrowableItem()
 
 void UCharacterEquipmentComponent::EquipNextItem()
 {
-	uint32 CurrentSlotIndex = (uint32)CurrentEquippedSlot;
-	uint32 NextSlotIndex = NextItemsArraySlotIndex(CurrentSlotIndex);
-	while (CurrentSlotIndex != NextSlotIndex
-		&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)NextSlotIndex)
-			|| !IsValid(ItemsArray[NextSlotIndex])))
+	if (CachedBaseCharacter->IsPlayerControlled())
 	{
-		NextSlotIndex = NextItemsArraySlotIndex(NextSlotIndex);
-
-		if (NextSlotIndex == ItemsArray.Num())
+		if (IsSelectingWeapon())
 		{
-			NextSlotIndex = 0;
+			WeaponWheelWidget->NextSegment();
+		}
+		else
+		{
+			APlayerController* PlayerController = CachedBaseCharacter->GetController<APlayerController>();
+			OpenWeaponWheel(PlayerController);
 		}
 	}
-	if (CurrentSlotIndex != NextSlotIndex)
+	else
 	{
-		EquipItemInSlot((EEquipmentSlots)NextSlotIndex);
+		uint32 CurrentSlotIndex = (uint32)CurrentEquippedSlot;
+		uint32 NextSlotIndex = NextItemsArraySlotIndex(CurrentSlotIndex);
+		while (CurrentSlotIndex != NextSlotIndex
+			&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)NextSlotIndex)
+				|| !IsValid(ItemsArray[NextSlotIndex])))
+		{
+			NextSlotIndex = NextItemsArraySlotIndex(NextSlotIndex);
+
+			if (NextSlotIndex == ItemsArray.Num())
+			{
+				NextSlotIndex = 0;
+			}
+		}
+		if (CurrentSlotIndex != NextSlotIndex)
+		{
+			EquipItemInSlot((EEquipmentSlots)NextSlotIndex);
+		}
 	}
 }
 
 void UCharacterEquipmentComponent::EquipPreviousItem()
 {
-	uint32 CurrentSlotIndex = (uint32)CurrentEquippedSlot;
-	uint32 PreviousSlotIndex = PreviousItemsArraySlotIndex(CurrentSlotIndex);
-
-	while (CurrentSlotIndex != PreviousSlotIndex
-		&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)PreviousSlotIndex)
-			|| !IsValid(ItemsArray[PreviousSlotIndex])))
+	if (CachedBaseCharacter->IsPlayerControlled())
 	{
-		PreviousSlotIndex = PreviousItemsArraySlotIndex(PreviousSlotIndex);
-
-		if (PreviousSlotIndex == ItemsArray.Num())
+		if (IsSelectingWeapon())
 		{
-			PreviousSlotIndex = 0;
+			WeaponWheelWidget->PreviousSegment();
+		}
+		else
+		{
+			APlayerController* PlayerController = CachedBaseCharacter->GetController<APlayerController>();
+			OpenWeaponWheel(PlayerController);
 		}
 	}
-	if (CurrentSlotIndex != PreviousSlotIndex)
+	else
 	{
-		EquipItemInSlot((EEquipmentSlots)PreviousSlotIndex);
+		uint32 CurrentSlotIndex = (uint32)CurrentEquippedSlot;
+		uint32 PreviousSlotIndex = PreviousItemsArraySlotIndex(CurrentSlotIndex);
+
+		while (CurrentSlotIndex != PreviousSlotIndex
+			&& (IgnoreSlotsWhileSwitching.Contains((EEquipmentSlots)PreviousSlotIndex)
+				|| !IsValid(ItemsArray[PreviousSlotIndex])))
+		{
+			PreviousSlotIndex = PreviousItemsArraySlotIndex(PreviousSlotIndex);
+
+			if (PreviousSlotIndex == ItemsArray.Num())
+			{
+				PreviousSlotIndex = 0;
+			}
+		}
+		if (CurrentSlotIndex != PreviousSlotIndex)
+		{
+			EquipItemInSlot((EEquipmentSlots)PreviousSlotIndex);
+		}
 	}
 }
 
@@ -200,7 +230,7 @@ void UCharacterEquipmentComponent::RemoveItemFromSlot(uint32 SlotIndex)
 void UCharacterEquipmentComponent::OpenViewEquipment(APlayerController* PlayerController)
 {
 	if (!IsValid(ViewWidget))
-		CreateViewWidget(PlayerController);
+		CreateEquipmentsWidget(PlayerController);
 
 	if (!ViewWidget->IsVisible())
 		ViewWidget->AddToViewport();
@@ -220,6 +250,25 @@ bool UCharacterEquipmentComponent::IsViewVisible() const
 	return Result;
 }
 
+void UCharacterEquipmentComponent::OpenWeaponWheel(APlayerController* PlayerController)
+{
+	if (!IsValid(WeaponWheelWidget))
+		CreateEquipmentsWidget(PlayerController);
+
+	if (!WeaponWheelWidget->IsVisible())
+		WeaponWheelWidget->AddToViewport();
+}
+
+bool UCharacterEquipmentComponent::IsSelectingWeapon() const
+{
+	return IsValid(WeaponWheelWidget) && WeaponWheelWidget->IsVisible();
+}
+
+void UCharacterEquipmentComponent::ConfirmWeaponSelection() const
+{
+	WeaponWheelWidget->ConfirmSelection();
+}
+
 const TArray<AEquipableItem*>& UCharacterEquipmentComponent::GetItems() const
 {
 	return ItemsArray;
@@ -236,7 +285,7 @@ void UCharacterEquipmentComponent::BeginPlay()
 	AutoEquip();
 }
 
-void UCharacterEquipmentComponent::CreateViewWidget(APlayerController* PlayerController)
+void UCharacterEquipmentComponent::CreateEquipmentsWidget(APlayerController* PlayerController)
 {
 	checkf(IsValid(ViewWidgetClass), TEXT("UCharacterEquipmentComponent::CreateViewWidget view widget class is not defined"));
 	if (!IsValid(PlayerController))
@@ -244,6 +293,9 @@ void UCharacterEquipmentComponent::CreateViewWidget(APlayerController* PlayerCon
 
 	ViewWidget = CreateWidget<UEquipmentViewWidget>(PlayerController, ViewWidgetClass);
 	ViewWidget->InitializeEquipmentWidget(this);
+
+	WeaponWheelWidget = CreateWidget<UWeaponWheelWidget>(PlayerController, WeaponWheelWidgetClass);
+	WeaponWheelWidget->InitializeWeaponWheelWidget(this);
 }
 
 void UCharacterEquipmentComponent::OnWeaponReloadComplete()
@@ -284,7 +336,7 @@ void UCharacterEquipmentComponent::CreateLoadout()
 	{
 		AmmunitionArray[(int32)AmmoPair.Key] = FMath::Max(AmmoPair.Value, 0);
 	}
-	
+
 	ItemsArray.AddZeroed((uint32)EEquipmentSlots::MAX);
 	for (const TPair<EEquipmentSlots, TSubclassOf<AEquipableItem>>& ItemPair : ItemsLoadout)
 	{

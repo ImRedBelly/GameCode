@@ -57,6 +57,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("SecondaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::SecondaryMeleeAttack);
 	InputComponent->BindAction(ActionInteract, IE_Pressed, this, &AGCPlayerController::Interact);
 	InputComponent->BindAction("UseInventory", IE_Pressed, this, &AGCPlayerController::UseInventory);
+	InputComponent->BindAction("ConfirmWeaponWheelSelection", IE_Pressed, this, &AGCPlayerController::ConfirmWeaponWheelSelection);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -295,6 +296,14 @@ void AGCPlayerController::UseInventory()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->UseInventory(this);
+	}
+}
+
+void AGCPlayerController::ConfirmWeaponWheelSelection()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ConfirmWeaponWheelSelection();
 	}
 }
 

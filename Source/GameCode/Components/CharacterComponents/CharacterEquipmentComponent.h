@@ -8,9 +8,11 @@
 #include "GameCode/Actors/Equipment/Weapons/RangeWeaponItem.h"
 #include "GameCode/Characters/GCBaseCharacter.h"
 #include "GameCode/UI/Widgets/Equipment/EquipmentViewWidget.h"
+#include "GameCode/UI/Widgets/Equipment/WeaponWheelWidget.h"
 #include "CharacterEquipmentComponent.generated.h"
 
 class UEquipmentViewWidget;
+class UWeaponWheelWidget;
 
 typedef TArray<AEquipableItem*, TInlineAllocator<(uint32)EEquipmentSlots::MAX>> TItemsArray;
 typedef TArray<uint32, TInlineAllocator<(uint32)EAmmunitionType::MAX>> TAmmunitionArray;
@@ -48,6 +50,10 @@ public:
 	void CloseViewEquipment();
 	bool IsViewVisible() const;
 
+	void OpenWeaponWheel(APlayerController* PlayerController);
+	bool IsSelectingWeapon() const;
+	void ConfirmWeaponSelection() const;
+
 	const TArray<AEquipableItem*>& GetItems() const;
 
 protected:
@@ -68,8 +74,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="View")
 	TSubclassOf<UEquipmentViewWidget> ViewWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="View")
+	TSubclassOf<UWeaponWheelWidget> WeaponWheelWidgetClass;
 
-	void CreateViewWidget(APlayerController* PlayerController);
+
+	void CreateEquipmentsWidget(APlayerController* PlayerController);
 
 private:
 	TAmmunitionArray AmmunitionArray;
@@ -106,4 +115,5 @@ private:
 	FTimerHandle EquipTimer;
 
 	UEquipmentViewWidget* ViewWidget;
+	UWeaponWheelWidget* WeaponWheelWidget;
 };

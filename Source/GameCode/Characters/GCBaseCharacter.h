@@ -129,6 +129,7 @@ public:
 	bool PickupItem(TWeakObjectPtr<class UInventoryItem> ItemToPickup);
 	
 	void UseInventory(APlayerController* PlayerController);
+	void ConfirmWeaponWheelSelection();
 
 	FOnInteractableObjectFound OnInteractableObjectFound;
 

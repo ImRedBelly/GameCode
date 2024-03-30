@@ -92,6 +92,9 @@ void AGCBaseCharacter::StopSprint()
 
 void AGCBaseCharacter::StartFire()
 {
+	if (CharacterEquipmentComponent->IsSelectingWeapon())
+		return;
+	
 	if (CharacterEquipmentComponent->GetIsEquipping())
 		return;
 
@@ -208,6 +211,12 @@ void AGCBaseCharacter::UseInventory(APlayerController* PlayerController)
 		PlayerController->SetInputMode(FInputModeGameOnly{});
 		PlayerController->bShowMouseCursor = false;
 	}
+}
+
+void AGCBaseCharacter::ConfirmWeaponWheelSelection()
+{
+	if (CharacterEquipmentComponent->IsSelectingWeapon())
+		CharacterEquipmentComponent->ConfirmWeaponSelection();
 }
 
 void AGCBaseCharacter::InitializeHealthProgress()
