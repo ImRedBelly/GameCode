@@ -38,6 +38,8 @@ public:
 	void EquipPreviousItem();
 	bool GetIsEquipping() const;
 
+	void AddEquipmentItem(const TSubclassOf<AEquipableItem> EquipableItemClass);
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -60,6 +60,7 @@ private:
 
 	void OnInteractableObjectFound(FName ActionName);
 	void Interact();
+	void UseInventory();
 
 	void CreateAndInitializeWidgets();
 

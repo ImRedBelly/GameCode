@@ -56,6 +56,7 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("PrimaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::PrimaryMeleeAttack);
 	InputComponent->BindAction("SecondaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::SecondaryMeleeAttack);
 	InputComponent->BindAction(ActionInteract, IE_Pressed, this, &AGCPlayerController::Interact);
+	InputComponent->BindAction("UseInventory", IE_Pressed, this, &AGCPlayerController::UseInventory);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -286,6 +287,14 @@ void AGCPlayerController::Interact()
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->Interact();
+	}
+}
+
+void AGCPlayerController::UseInventory()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->UseInventory(this);
 	}
 }
 

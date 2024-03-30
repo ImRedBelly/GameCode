@@ -1,10 +1,9 @@
-#include "GCBaseCharacter.h"
-
 #include "AIController.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include "GameCode/Components/CharacterComponents/CharacterInventoryComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
 #include "GameCode/UI/Widgets/World/GCAttributeProgressBar.h"
@@ -19,6 +18,7 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 
 	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeComponent>(TEXT("CharacterAttribute"));
 	CharacterEquipmentComponent = CreateDefaultSubobject<UCharacterEquipmentComponent>(TEXT("CharacterEquipment"));
+	CharacterInventoryComponent = CreateDefaultSubobject<UCharacterInventoryComponent>(TEXT("CharacterInventory"));
 
 	HealthBarProgressComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarProgressComponent"));
 	HealthBarProgressComponent->SetupAttachment(GetCapsuleComponent());
@@ -175,6 +175,42 @@ void AGCBaseCharacter::Interact()
 {
 	if (LineOfSightObject.GetInterface())
 		LineOfSightObject->Interact(this);
+}
+
+void AGCBaseCharacter::AddEquipmentItem(const TSubclassOf<class AEquipableItem> EquipableItemClass)
+{
+	CharacterEquipmentComponent->AddEquipmentItem(EquipableItemClass);
+}
+
+bool AGCBaseCharacter::PickupItem(TWeakObjectPtr<UInventoryItem> ItemToPickup)
+{
+	bool Result = false;
+	if (CharacterInventoryComponent->HasFreeSlot())
+	{
+		CharacterInventoryComponent->AddItem(ItemToPickup, 1);
+		Result = true;
+	}
+
+	return Result;
+}
+
+void AGCBaseCharacter::UseInventory(APlayerController* PlayerController)
+{
+	if (!IsValid(PlayerController))
+		return;
+
+	if (!CharacterInventoryComponent->IsViewVisible())
+	{
+		CharacterInventoryComponent->OpenViewInventory(PlayerController);
+		PlayerController->SetInputMode(FInputModeGameAndUI{});
+		PlayerController->bShowMouseCursor = true;
+	}
+	else
+	{
+		CharacterInventoryComponent->CloseViewInventory();
+		PlayerController->SetInputMode(FInputModeGameOnly{});
+		PlayerController->bShowMouseCursor = false;
+	}
 }
 
 void AGCBaseCharacter::InitializeHealthProgress()
@@ -347,6 +383,11 @@ UCharacterEquipmentComponent* AGCBaseCharacter::GetCharacterEquipmentComponent_M
 const UCharacterEquipmentComponent* AGCBaseCharacter::GetCharacterEquipmentComponent() const
 {
 	return CharacterEquipmentComponent;
+}
+
+UCharacterAttributeComponent* AGCBaseCharacter::GetCharacterAttributeComponent_Mutable() const
+{
+	return CharacterAttributeComponent;
 }
 
 const UCharacterAttributeComponent* AGCBaseCharacter::GetCharacterAttributeComponent() const

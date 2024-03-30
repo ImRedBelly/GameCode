@@ -161,6 +161,19 @@ bool UCharacterEquipmentComponent::GetIsEquipping() const
 	return bIsEquipping;
 }
 
+void UCharacterEquipmentComponent::AddEquipmentItem(const TSubclassOf<AEquipableItem> EquipableItemClass)
+{
+	ARangeWeaponItem* RangeWeaponObject = Cast<ARangeWeaponItem>(EquipableItemClass->GetDefaultObject());
+	if (!IsValid(RangeWeaponObject))
+		return;
+
+	AmmunitionArray[(uint32)RangeWeaponObject->GetAmmoType()] += RangeWeaponObject->GetMaxAmmo();
+	if (IsValid(CurrentEquippedWeapon))
+	{
+		OnCurrentWeaponAmmoChanged(CurrentEquippedWeapon->GetAmmo());
+	}
+}
+
 void UCharacterEquipmentComponent::BeginPlay()
 {
 	Super::BeginPlay();

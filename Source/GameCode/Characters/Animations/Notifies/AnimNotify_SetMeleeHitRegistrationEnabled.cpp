@@ -1,5 +1,5 @@
-﻿#include "GameCode/Characters/GCBaseCharacter.h"
-#include "AnimNotify_SetMeleeHitRegistrationEnabled.h"
+﻿#include "AnimNotify_SetMeleeHitRegistrationEnabled.h"
+#include "GameCode/Characters/GCBaseCharacter.h"
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
 
 void UAnimNotify_SetMeleeHitRegistrationEnabled::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)

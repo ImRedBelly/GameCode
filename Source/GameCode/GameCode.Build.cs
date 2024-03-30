@@ -10,5 +10,6 @@ public class GameCode : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[]
 			{ "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "Niagara", "UMG", "GameplayTasks", "NavigationSystem" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 	}
 }

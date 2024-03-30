@@ -17,6 +17,28 @@ float UCharacterAttributeComponent::GetHealthPercent() const
 	return Health / MaxHealth;
 }
 
+void UCharacterAttributeComponent::AddHealth(float HeathToAdd)
+{
+	Health = FMath::Clamp(Health + HeathToAdd, 0.0f, MaxHealth);
+	OnHealthChanged();
+}
+
+void UCharacterAttributeComponent::OnHealthChanged()
+{
+	if (OnHealthChangedEvent.IsBound())
+	{
+		OnHealthChangedEvent.Broadcast(GetHealthPercent());
+	}
+	if (Health <= 0.0f)
+	{
+		if (OnDeathEvent.IsBound())
+		{
+			OnDeathEvent.Broadcast();
+		}
+	}
+}
+
+
 void UCharacterAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -43,17 +65,7 @@ void UCharacterAttributeComponent::OnTakeAnyDamage(AActor* DamagedActor, float D
 	if (!IsAlive()) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
-
-	if (OnHealthChangedEvent.IsBound())
-		OnHealthChangedEvent.Broadcast(GetHealthPercent());
-
-	if (Health <= 0)
-	{
-		if (OnDeathEvent.IsBound())
-		{
-			OnDeathEvent.Broadcast();
-		}
-	}
+	OnHealthChanged();
 }
 
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT

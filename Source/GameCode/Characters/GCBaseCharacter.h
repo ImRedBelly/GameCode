@@ -9,11 +9,16 @@
 #include "GameCode/Actors/Interactive/Interface/IInteractable.h"
 #include "GameCode/Components/LedgeDetectorComponent.h"
 #include "GameCode/Components/CharacterComponents/CharacterAttributeComponent.h"
+#include "GameCode/Inventory/Items/InventoryItem.h"
 #include "GameFramework/Character.h"
 #include "GCBaseCharacter.generated.h"
 
 class UGCBaseCharacterMovementComponent;
 class UCharacterEquipmentComponent;
+class UCharacterInventoryComponent;
+class UInventoryItem;
+class IInteractable;
+class UWidgetComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAimingStateChanged, bool)
 DECLARE_DELEGATE_OneParam(FOnInteractableObjectFound, FName);
@@ -120,6 +125,12 @@ public:
 	void SecondaryMeleeAttack();
 
 	void Interact();
+	
+	void AddEquipmentItem(const TSubclassOf<class AEquipableItem> EquipableItemClass);
+	bool PickupItem(TWeakObjectPtr<class UInventoryItem> ItemToPickup);
+	
+	void UseInventory(APlayerController* PlayerController);
+
 	FOnInteractableObjectFound OnInteractableObjectFound;
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Character| Components")
@@ -154,6 +165,7 @@ public:
 
 	UCharacterEquipmentComponent* GetCharacterEquipmentComponent_Mutable() const;
 	const UCharacterEquipmentComponent* GetCharacterEquipmentComponent() const;
+	UCharacterAttributeComponent* GetCharacterAttributeComponent_Mutable() const;
 	const UCharacterAttributeComponent* GetCharacterAttributeComponent() const;
 
 protected:
@@ -185,6 +197,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Components")
 	UCharacterAttributeComponent* CharacterAttributeComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Components")
+	UCharacterInventoryComponent* CharacterInventoryComponent;
 
 	virtual void OnDeath();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Animations")

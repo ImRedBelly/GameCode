@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Reticle")
 	EReticleType ReticleType = EReticleType::None;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
+	FName DataTableID = NAME_None;
+
 	AGCBaseCharacter* GetCharacterOwner() const;
 
 private:
