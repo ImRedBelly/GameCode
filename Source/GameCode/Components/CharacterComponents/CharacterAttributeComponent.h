@@ -14,16 +14,17 @@ class GAMECODE_API UCharacterAttributeComponent : public UActorComponent
 
 public:
 	UCharacterAttributeComponent();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	FOnDeathEventSignature OnDeathEvent;
 	FOnHealthChanged OnHealthChangedEvent;
-	
+
 	bool IsAlive() { return Health > 0; }
 	float GetHealthPercent() const;
 	void AddHealth(float HeathToAdd);
-	void OnHealthChanged();
 
 protected:
 	virtual void BeginPlay() override;
@@ -34,7 +35,12 @@ protected:
 private:
 	TWeakObjectPtr<class AGCBaseCharacter> CachedBaseCharacterOwner;
 
+	UPROPERTY(ReplicatedUsing=OnRep_Health)
 	float Health = 0;
+
+	UFUNCTION()
+	void OnRep_Health();
+	void OnHealthChanged();
 
 	UFUNCTION()
 	void OnTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,

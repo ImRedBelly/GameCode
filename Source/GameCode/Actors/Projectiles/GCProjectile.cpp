@@ -1,15 +1,21 @@
 ﻿#include "GCProjectile.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 AGCProjectile::AGCProjectile()
 {
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->SetSphereRadius(5.0f);
+	CollisionComponent->InitSphereRadius(5.0f);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComponent->SetCollisionResponseToChannels(ECR_Block);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Block);
 	SetRootComponent(CollisionComponent);
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovmentComponent"));
 	ProjectileMovementComponent->InitialSpeed = 2000.0f;
+	ProjectileMovementComponent->bAutoActivate = false;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void AGCProjectile::LaunchProjectile(FVector Direction)
@@ -17,6 +23,11 @@ void AGCProjectile::LaunchProjectile(FVector Direction)
 	ProjectileMovementComponent->Velocity = Direction * ProjectileMovementComponent->InitialSpeed;
 	CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
 	OnProjectileLaunched();
+}
+
+void AGCProjectile::SetProjectileActive_Implementation(bool bIsProjectileActive)
+{
+	ProjectileMovementComponent->SetActive(bIsProjectileActive);
 }
 
 void AGCProjectile::BeginPlay()
@@ -29,8 +40,11 @@ void AGCProjectile::OnProjectileLaunched()
 {
 }
 
-void AGCProjectile::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AGCProjectile::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                   UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OnProjectileHit.IsBound())
-		OnProjectileHit.Broadcast(Hit, ProjectileMovementComponent->Velocity.GetSafeNormal());
+	{
+		OnProjectileHit.Broadcast(this, Hit, ProjectileMovementComponent->Velocity.GetSafeNormal());
+	}
 }

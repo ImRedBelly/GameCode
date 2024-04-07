@@ -43,8 +43,12 @@ UCLASS()
 class GAMECODE_API UGCBaseCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
+	friend class FSavedMove_GC;
 
 public:
+	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
+	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+
 	virtual void PhysicsRotation(float DeltaTime) override;
 
 	FORCEINLINE bool IsSprinting() const { return bIsSprinting; }
@@ -104,3 +108,33 @@ private:
 	FRotator ForceTargetRotation = FRotator::ZeroRotator;
 	bool bForceRotation = false;
 };
+
+class FSavedMove_GC : public FSavedMove_Character
+{
+	typedef FSavedMove_Character Super;
+
+public:
+	virtual void Clear() override;
+	virtual uint8 GetCompressedFlags() const override;
+
+	virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
+
+	virtual void SetMoveFor(ACharacter* C, float InDeltaTime, FVector const& NewAccel, FNetworkPredictionData_Client_Character& ClientData) override;
+	virtual void PrepMoveFor(ACharacter* C) override;
+
+private:
+	uint8 bSavedIsSprinting : 1;
+	uint8 bSavedIsMantling : 1;
+};
+
+class FNetworkPredictionData_Client_Character_GC : public FNetworkPredictionData_Client_Character
+{
+	typedef FNetworkPredictionData_Client_Character Super;
+
+public:
+	FNetworkPredictionData_Client_Character_GC(const UCharacterMovementComponent& MovementComponent);
+
+	virtual FSavedMovePtr AllocateNewMove() override;
+};
+
+

@@ -1,6 +1,7 @@
 ﻿#include "Turret.h"
 
 #include "AIController.h"
+#include "Net/UnrealNetwork.h"
 
 ATurret::ATurret()
 {
@@ -17,6 +18,19 @@ ATurret::ATurret()
 
 	WeaponBarellComponent = CreateDefaultSubobject<UWeaponBarellComponent>(TEXT("WeaponBarell"));
 	WeaponBarellComponent->SetupAttachment(TurretBarellComponent);
+
+	SetReplicates(true);
+}
+
+void ATurret::OnRep_CurrentTarget()
+{
+	OnCurrentTargetSet();
+}
+
+void ATurret::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ATurret, CurrentTarget);
 }
 
 void ATurret::Tick(float DeltaTime)
@@ -50,9 +64,8 @@ void ATurret::PossessedBy(AController* NewController)
 }
 
 
-void ATurret::SetCurrentTarget(AActor* NewTarget)
+void ATurret::OnCurrentTargetSet()
 {
-	CurrentTarget = NewTarget;
 	ETurretState NewState = IsValid(CurrentTarget) ? ETurretState::Firing : ETurretState::Searching;
 	SetTurretState(NewState);
 }
@@ -70,16 +83,20 @@ void ATurret::SearchingMovement(float DeltaTime)
 
 void ATurret::FiringMovement(float DeltaTime)
 {
-	FVector BaseLookAtDirection = (CurrentTarget->GetActorLocation() - TurretBaseComponent->GetComponentLocation()).GetSafeNormal2D();
+	FVector BaseLookAtDirection = (CurrentTarget->GetActorLocation() - TurretBaseComponent->GetComponentLocation()).
+		GetSafeNormal2D();
 	FQuat LookAtQuat = BaseLookAtDirection.ToOrientationQuat();
-	FQuat TargetQuat = FMath::QInterpTo(TurretBaseComponent->GetComponentQuat(), LookAtQuat, DeltaTime, BaseFiringInterpSpeed);
+	FQuat TargetQuat = FMath::QInterpTo(TurretBaseComponent->GetComponentQuat(), LookAtQuat, DeltaTime,
+	                                    BaseFiringInterpSpeed);
 	TurretBaseComponent->SetWorldRotation(TargetQuat);
 
 
-	FVector BarellLookAtDirection = (CurrentTarget->GetActorLocation() - TurretBarellComponent->GetComponentLocation()).GetSafeNormal();
+	FVector BarellLookAtDirection = (CurrentTarget->GetActorLocation() - TurretBarellComponent->GetComponentLocation()).
+		GetSafeNormal();
 	float LookAtPitchAngle = BarellLookAtDirection.ToOrientationRotator().Pitch;
 	FRotator BarellLocalRotation = TurretBarellComponent->GetRelativeRotation();
-	BarellLocalRotation.Pitch = FMath::FInterpTo(BarellLocalRotation.Pitch, LookAtPitchAngle, DeltaTime, BarellPitchRotationRate);
+	BarellLocalRotation.Pitch = FMath::FInterpTo(BarellLocalRotation.Pitch, LookAtPitchAngle, DeltaTime,
+	                                             BarellPitchRotationRate);
 	TurretBarellComponent->SetRelativeRotation(BarellLocalRotation);
 }
 
@@ -99,7 +116,8 @@ void ATurret::SetTurretState(ETurretState NewState)
 		}
 	case ETurretState::Firing:
 		{
-			GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ATurret::MakeShot, GetFireInterval(), true, FireDelayTime);
+			GetWorld()->GetTimerManager().SetTimer(ShotTimer, this, &ATurret::MakeShot, GetFireInterval(), true,
+			                                       FireDelayTime);
 			break;
 		}
 	}

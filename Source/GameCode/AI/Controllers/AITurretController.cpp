@@ -7,7 +7,8 @@ void AAITurretController::SetPawn(APawn* InPawn)
 	Super::SetPawn(InPawn);
 	if (IsValid(InPawn))
 	{
-		checkf(InPawn->IsA<ATurret>(), TEXT("AAITurretController::SetPawn AAITurretController can possess only Turrets"));
+		checkf(InPawn->IsA<ATurret>(),
+		       TEXT("AAITurretController::SetPawn AAITurretController can possess only Turrets"));
 		CachedTurret = StaticCast<ATurret*>(InPawn);
 	}
 	else
@@ -23,7 +24,8 @@ void AAITurretController::ActorsPerceptionUpdated(const TArray<AActor*>& Updated
 	{
 		return;
 	}
-	
+
 	AActor* ClosestActor = GetClosestSensedActor(UAISense_Sight::StaticClass());
-	CachedTurret->SetCurrentTarget(ClosestActor);
+	CachedTurret->CurrentTarget = ClosestActor;
+	CachedTurret->OnCurrentTargetSet();
 }

@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameCode/Components/MovementComponents/GCBaseCharacterMovementComponent.h"
 #include "GameCode/UI/Widgets/World/GCAttributeProgressBar.h"
+#include "Net/UnrealNetwork.h"
 
 AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer.SetDefaultSubobjectClass<UGCBaseCharacterMovementComponent>(CharacterMovementComponentName))
@@ -22,6 +23,12 @@ AGCBaseCharacter::AGCBaseCharacter(const FObjectInitializer& ObjectInitializer) 
 
 	HealthBarProgressComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarProgressComponent"));
 	HealthBarProgressComponent->SetupAttachment(GetCapsuleComponent());
+}
+
+void AGCBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AGCBaseCharacter, bIsMantling);
 }
 
 void AGCBaseCharacter::BeginPlay()
@@ -94,7 +101,7 @@ void AGCBaseCharacter::StartFire()
 {
 	if (CharacterEquipmentComponent->IsSelectingWeapon())
 		return;
-	
+
 	if (CharacterEquipmentComponent->GetIsEquipping())
 		return;
 
@@ -133,6 +140,15 @@ void AGCBaseCharacter::StopAiming()
 	bIsAiming = false;
 	CurrentAimingMovementSpeed = 0;
 	OnStopAiming();
+}
+
+FRotator AGCBaseCharacter::GetAimOffset()
+{
+	FVector AimDirectionWorld = GetBaseAimRotation().Vector();
+	FVector AimDirectionLocal = GetTransform().InverseTransformVectorNoScale(AimDirectionWorld);
+
+	FRotator Result = AimDirectionLocal.ToOrientationRotator();
+	return Result;
 }
 
 void AGCBaseCharacter::NextItem()
@@ -230,7 +246,8 @@ void AGCBaseCharacter::InitializeHealthProgress()
 	if (IsPlayerControlled() && IsLocallyControlled())
 		HealthBarProgressComponent->SetVisibility(false);
 
-	CharacterAttributeComponent->OnHealthChangedEvent.AddUObject(Widget, &UGCAttributeProgressBar::SetProgressPercentage);
+	CharacterAttributeComponent->OnHealthChangedEvent.AddUObject(
+		Widget, &UGCAttributeProgressBar::SetProgressPercentage);
 	CharacterAttributeComponent->OnDeathEvent.AddLambda([=] { HealthBarProgressComponent->SetVisibility(false); });
 	Widget->SetProgressPercentage(CharacterAttributeComponent->GetHealthPercent());
 }
@@ -263,6 +280,8 @@ void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
 	FLedgeDescription LedgeDescription;
 	if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
 	{
+		bIsMantling = true;
+
 		FMantlingMovementParameters MantlingParameters;
 		MantlingParameters.InitialLocation = GetActorLocation();
 		MantlingParameters.InitialRotation = GetActorRotation();
@@ -286,13 +305,23 @@ void AGCBaseCharacter::Mantle(bool bForce /*= false*/)
 			AnimationCorrectionZ * FVector::UpVector + MantlingSettings.AnimationCorrectionXY * LedgeDescription.
 			LedgeNormal;
 
-
-		GCBaseCharacterMovementComponent->StartMantle(MantlingParameters);
+		if (IsLocallyControlled() || GetLocalRole() == ROLE_Authority)
+		{
+			GCBaseCharacterMovementComponent->StartMantle(MantlingParameters);
+		}
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->Montage_Play(MantlingSettings.MantlingMontage, 1.0f, EMontagePlayReturnType::Duration,
 		                           MantlingParameters.StartTime);
 		OnMantling(MantlingSettings, MantlingParameters.StartTime);
+	}
+}
+
+void AGCBaseCharacter::OnRep_IsMantling(bool bWasIsMantling)
+{
+	if (GetLocalRole() == ROLE_SimulatedProxy && !bWasIsMantling && bIsMantling)
+	{
+		Mantle(true);
 	}
 }
 
@@ -437,6 +466,9 @@ void AGCBaseCharacter::TraceLineOfSight()
 	FRotator ViewRotation;
 
 	APlayerController* PlayerController = GetController<APlayerController>();
+	if (!IsValid(PlayerController))
+		return;
+
 	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
 	FVector ViewDirection = ViewRotation.Vector();

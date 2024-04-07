@@ -55,7 +55,7 @@ class GAMECODE_API AGCBaseCharacter : public ACharacter, public IGenericTeamAgen
 
 public:
 	AGCBaseCharacter(const FObjectInitializer& ObjectInitializer);
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -115,6 +115,8 @@ public:
 	void StartAiming();
 	void StopAiming();
 
+	FRotator GetAimOffset();
+
 	void NextItem();
 	void PreviousItem();
 	void EquipPrimaryItem();
@@ -125,9 +127,9 @@ public:
 	void SecondaryMeleeAttack();
 
 	void Interact();
-	
+
 	bool PickupItem(TWeakObjectPtr<class UInventoryItem> ItemToPickup);
-	
+
 	void UseInventory(APlayerController* PlayerController);
 	void ConfirmWeaponWheelSelection();
 
@@ -148,6 +150,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Mantle(bool bForce = false);
+	UPROPERTY(ReplicatedUsing=OnRep_IsMantling)
+	bool bIsMantling;
+
+	UFUNCTION()
+	void OnRep_IsMantling(bool bWasIsMantling);
+
 	bool CanMantling() const;
 	bool IsAiming() const;
 	FOnAimingStateChanged OnAimingStateChanged;
@@ -192,7 +200,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling")
 	FMantlingSettings LowMantlingSettings;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling", meta=(ClampMin=0.0f, UIMin = 0.0f))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character|Movement|Mantling",
+		meta=(ClampMin=0.0f, UIMin = 0.0f))
 	float LowMantleMaxHeight = 125.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character|Components")

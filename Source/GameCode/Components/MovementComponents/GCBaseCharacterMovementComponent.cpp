@@ -3,6 +3,33 @@
 #include "Curves/CurveVector.h"
 #include "GameFramework/Character.h"
 
+FNetworkPredictionData_Client* UGCBaseCharacterMovementComponent::GetPredictionData_Client() const
+{
+	if (ClientPredictionData == nullptr)
+	{
+		UGCBaseCharacterMovementComponent* MutableThis = const_cast<UGCBaseCharacterMovementComponent*>(this);
+		MutableThis->ClientPredictionData = new FNetworkPredictionData_Client_Character_GC(*this);
+	}
+	return ClientPredictionData;
+}
+
+void UGCBaseCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
+{
+	Super::UpdateFromCompressedFlags(Flags);
+
+	bool bWasMantling = GetBaseCharacterOwner()->bIsMantling;
+	bIsSprinting = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+	bool bIsMantling = (Flags & FSavedMove_Character::FLAG_Custom_1) != 0;
+
+	if (GetBaseCharacterOwner()->GetLocalRole() == ROLE_Authority)
+	{
+		if (!bWasMantling && bIsMantling)
+		{
+			GetBaseCharacterOwner()->Mantle(true);
+		}
+	}
+}
+
 void UGCBaseCharacterMovementComponent::PhysicsRotation(float DeltaTime)
 {
 	if (bForceRotation)
@@ -90,6 +117,7 @@ void UGCBaseCharacterMovementComponent::StartMantle(const FMantlingMovementParam
 
 void UGCBaseCharacterMovementComponent::EndMantle()
 {
+	GetBaseCharacterOwner()->bIsMantling = false;
 	SetMovementMode(MOVE_Walking);
 }
 
@@ -195,6 +223,9 @@ float UGCBaseCharacterMovementComponent::GetLadderSpeedRatio() const
 
 void UGCBaseCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
+	if (GetBaseCharacterOwner()->GetLocalRole() == ROLE_SimulatedProxy)
+		return;
+
 	switch (CustomMovementMode)
 	{
 	case (uint8)ECustomMovementMode::CMOVE_Mantling:
@@ -265,6 +296,8 @@ void UGCBaseCharacterMovementComponent::PhysMantling(float deltaTime, int32 Iter
 	                                   CurrentMantlingParameters.TargetRotation, PositionAlpha);
 
 	FVector Delta = NewLocation - GetActorLocation();
+	Velocity = Delta / deltaTime;
+
 	FHitResult Hit;
 	SafeMoveUpdatedComponent(Delta, NewRotation, false, Hit);
 }
@@ -303,4 +336,71 @@ void UGCBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterat
 AGCBaseCharacter* UGCBaseCharacterMovementComponent::GetBaseCharacterOwner() const
 {
 	return StaticCast<AGCBaseCharacter*>(CharacterOwner);
+}
+
+void FSavedMove_GC::Clear()
+{
+	Super::Clear();
+	bSavedIsSprinting = 0;
+	bSavedIsMantling = 0;
+}
+
+uint8 FSavedMove_GC::GetCompressedFlags() const
+{
+	uint8 Result = Super::GetCompressedFlags();
+
+	if (bSavedIsSprinting)
+	{
+		Result |= FLAG_Custom_0;
+	}
+	if (bSavedIsMantling)
+	{
+		Result &= ~FLAG_JumpPressed;
+		Result |= FLAG_Custom_1;
+	}
+	return Result;
+}
+
+bool FSavedMove_GC::CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const
+{
+	const FSavedMove_GC* NewMovePtr = StaticCast<FSavedMove_GC*>(NewMove.Get());
+	if (bSavedIsSprinting != NewMovePtr->bSavedIsSprinting
+		|| bSavedIsMantling != NewMovePtr->bSavedIsMantling)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
+}
+
+void FSavedMove_GC::SetMoveFor(ACharacter* C, float InDeltaTime, FVector const& NewAccel,
+                               FNetworkPredictionData_Client_Character& ClientData)
+{
+	Super::SetMoveFor(C, InDeltaTime, NewAccel, ClientData);
+
+	checkf(C->IsA<AGCBaseCharacter>(), TEXT("FSavedMove_GC::SetMoveFor"));
+	AGCBaseCharacter* InBaseCharacter = StaticCast<AGCBaseCharacter*>(C);
+	UGCBaseCharacterMovementComponent* MovementComponent = InBaseCharacter->GetBaseCharacterMovementComponent();
+
+	bSavedIsSprinting = MovementComponent->bIsSprinting;
+	bSavedIsMantling = InBaseCharacter->bIsMantling;
+}
+
+void FSavedMove_GC::PrepMoveFor(ACharacter* C)
+{
+	Super::PrepMoveFor(C);
+	UGCBaseCharacterMovementComponent* MovementComponent = StaticCast<UGCBaseCharacterMovementComponent*>(
+		C->GetMovementComponent());
+	MovementComponent->bIsSprinting = bSavedIsSprinting;
+}
+
+FNetworkPredictionData_Client_Character_GC::FNetworkPredictionData_Client_Character_GC(
+	const UCharacterMovementComponent& ClientMovement)
+	: Super(ClientMovement)
+{
+}
+
+FSavedMovePtr FNetworkPredictionData_Client_Character_GC::AllocateNewMove()
+{
+	return FSavedMovePtr(new FSavedMove_GC());
 }

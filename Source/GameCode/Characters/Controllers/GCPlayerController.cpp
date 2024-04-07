@@ -7,11 +7,14 @@ void AGCPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	CachedBaseCharacter = Cast<AGCBaseCharacter>(InPawn);
-	CreateAndInitializeWidgets();
+
+	if (IsLocalController())
+		CreateAndInitializeWidgets();
 
 	if (CachedBaseCharacter.IsValid() && IsLocalController())
 	{
-		CachedBaseCharacter->OnInteractableObjectFound.BindUObject(this, &AGCPlayerController::OnInteractableObjectFound);
+		CachedBaseCharacter->OnInteractableObjectFound.BindUObject(
+			this, &AGCPlayerController::OnInteractableObjectFound);
 	}
 }
 
@@ -57,7 +60,8 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("SecondaryMeleeAttack", IE_Pressed, this, &AGCPlayerController::SecondaryMeleeAttack);
 	InputComponent->BindAction(ActionInteract, IE_Pressed, this, &AGCPlayerController::Interact);
 	InputComponent->BindAction("UseInventory", IE_Pressed, this, &AGCPlayerController::UseInventory);
-	InputComponent->BindAction("ConfirmWeaponWheelSelection", IE_Pressed, this, &AGCPlayerController::ConfirmWeaponWheelSelection);
+	InputComponent->BindAction("ConfirmWeaponWheelSelection", IE_Pressed, this,
+	                           &AGCPlayerController::ConfirmWeaponWheelSelection);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -324,14 +328,18 @@ void AGCPlayerController::CreateAndInitializeWidgets()
 		if (IsValid(ReticleWidget))
 		{
 			CachedBaseCharacter->OnAimingStateChanged.AddUFunction(ReticleWidget, FName("OnAimingStateChanged"));
-			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
-			CharacterEquipmentComponent->OnEquippedItemChanged.AddUFunction(ReticleWidget, FName("OnEquippedItemChange"));
+			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->
+				GetCharacterEquipmentComponent_Mutable();
+			CharacterEquipmentComponent->OnEquippedItemChanged.AddUFunction(
+				ReticleWidget, FName("OnEquippedItemChange"));
 		}
 		UAmmoWidget* AmmoWidget = PlayerHUDWidget->GetAmmoWidget();
 		if (IsValid(AmmoWidget))
 		{
-			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->GetCharacterEquipmentComponent_Mutable();
-			CharacterEquipmentComponent->OnCurrentWeaponAmmoChangedEvent.AddUFunction(AmmoWidget, FName("UpdateAmmoCount"));
+			UCharacterEquipmentComponent* CharacterEquipmentComponent = CachedBaseCharacter->
+				GetCharacterEquipmentComponent_Mutable();
+			CharacterEquipmentComponent->OnCurrentWeaponAmmoChangedEvent.AddUFunction(
+				AmmoWidget, FName("UpdateAmmoCount"));
 		}
 	}
 }

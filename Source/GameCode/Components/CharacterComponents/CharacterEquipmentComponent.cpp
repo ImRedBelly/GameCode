@@ -1,6 +1,20 @@
 #include "CharacterEquipmentComponent.h"
 
 #include "GameCode/GameCodeTypes.h"
+#include "Net/UnrealNetwork.h"
+
+UCharacterEquipmentComponent::UCharacterEquipmentComponent()
+{
+	SetIsReplicatedByDefault(true);
+}
+
+void UCharacterEquipmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UCharacterEquipmentComponent, CurrentEquippedSlot);
+	DOREPLIFETIME(UCharacterEquipmentComponent, AmmunitionArray);
+	DOREPLIFETIME(UCharacterEquipmentComponent, ItemsArray);
+}
 
 EEquipableItemType UCharacterEquipmentComponent::GetCurrentEquippedItemType() const
 {
@@ -51,32 +65,42 @@ void UCharacterEquipmentComponent::EquipItemInSlot(EEquipmentSlots Slot)
 		{
 			bIsEquipping = true;
 			float MontageDuration = CachedBaseCharacter->PlayAnimMontage(EquipMontage);
-			GetWorld()->GetTimerManager().SetTimer(EquipTimer, this, &UCharacterEquipmentComponent::EquipAnimationFinished, MontageDuration, false);
+			GetWorld()->GetTimerManager().SetTimer(EquipTimer, this,
+			                                       &UCharacterEquipmentComponent::EquipAnimationFinished,
+			                                       MontageDuration, false);
 		}
 		else
 		{
 			AttachCurrentItemToEquippedSocket();
 		}
-		CurrentEquippedSlot = Slot;
 		CurrentEquippedItem->Equip();
 	}
 
 	if (IsValid(CurrentEquippedWeapon))
 	{
-		OnCurrentWeaponAmmoChangedHandle = CurrentEquippedWeapon->OnAmmoChanged.AddUFunction(this, FName("OnCurrentWeaponAmmoChanged"));
-		OnCurrentWeaponReloadedHandle = CurrentEquippedWeapon->OnReloadComplete.AddUFunction(this, FName("OnWeaponReloadComplete"));
+		OnCurrentWeaponAmmoChangedHandle = CurrentEquippedWeapon->OnAmmoChanged.AddUFunction(
+			this, FName("OnCurrentWeaponAmmoChanged"));
+		OnCurrentWeaponReloadedHandle = CurrentEquippedWeapon->OnReloadComplete.AddUFunction(
+			this, FName("OnWeaponReloadComplete"));
 		OnCurrentWeaponAmmoChanged(CurrentEquippedWeapon->GetAmmo());
 	}
 
 	if (OnEquippedItemChanged.IsBound())
 		OnEquippedItemChanged.Broadcast(CurrentEquippedItem);
+
+	CurrentEquippedSlot = Slot;
+	if (GetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		Server_EquipItemInSlot(CurrentEquippedSlot);
+	}
 }
 
 void UCharacterEquipmentComponent::UnEquipCurrentItem()
 {
 	if (IsValid(CurrentEquippedItem))
 	{
-		CurrentEquippedItem->AttachToComponent(CachedBaseCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform,
+		CurrentEquippedItem->AttachToComponent(CachedBaseCharacter->GetMesh(),
+		                                       FAttachmentTransformRules::KeepRelativeTransform,
 		                                       CurrentEquippedItem->GetUnEquippedSocketName());
 
 		CurrentEquippedItem->UnEquip();
@@ -98,7 +122,8 @@ void UCharacterEquipmentComponent::AttachCurrentItemToEquippedSocket()
 {
 	if (IsValid(CurrentEquippedItem))
 	{
-		CurrentEquippedItem->AttachToComponent(CachedBaseCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform,
+		CurrentEquippedItem->AttachToComponent(CachedBaseCharacter->GetMesh(),
+		                                       FAttachmentTransformRules::KeepRelativeTransform,
 		                                       CurrentEquippedItem->GetEquippedSocketName());
 	}
 }
@@ -191,7 +216,8 @@ bool UCharacterEquipmentComponent::GetIsEquipping() const
 	return bIsEquipping;
 }
 
-bool UCharacterEquipmentComponent::AddEquipmentItemToSlot(const TSubclassOf<AEquipableItem> EquipableItemClass, int32 SlotIndex)
+bool UCharacterEquipmentComponent::AddEquipmentItemToSlot(const TSubclassOf<AEquipableItem> EquipableItemClass,
+                                                          int32 SlotIndex)
 {
 	if (!IsValid(EquipableItemClass))
 		return false;
@@ -204,7 +230,8 @@ bool UCharacterEquipmentComponent::AddEquipmentItemToSlot(const TSubclassOf<AEqu
 	if (!IsValid(ItemsArray[SlotIndex]))
 	{
 		AEquipableItem* Item = GetWorld()->SpawnActor<AEquipableItem>(EquipableItemClass);
-		Item->AttachToComponent(CachedBaseCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Item->GetUnEquippedSocketName());
+		Item->AttachToComponent(CachedBaseCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform,
+		                        Item->GetUnEquippedSocketName());
 		Item->SetOwner(CachedBaseCharacter.Get());
 		ItemsArray[SlotIndex] = Item;
 	}
@@ -278,7 +305,9 @@ void UCharacterEquipmentComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	checkf(GetOwner()->IsA<AGCBaseCharacter>(),
-	       TEXT( "UCharacterEquipmentComponent::BeginPlay() CharacterEquipmentComponent Character can be used only with a BaseCharacter"));
+	       TEXT(
+		       "UCharacterEquipmentComponent::BeginPlay() CharacterEquipmentComponent Character can be used only with a BaseCharacter"
+	       ));
 
 	CachedBaseCharacter = StaticCast<AGCBaseCharacter*>(GetOwner());
 	CreateLoadout();
@@ -287,7 +316,8 @@ void UCharacterEquipmentComponent::BeginPlay()
 
 void UCharacterEquipmentComponent::CreateEquipmentsWidget(APlayerController* PlayerController)
 {
-	checkf(IsValid(ViewWidgetClass), TEXT("UCharacterEquipmentComponent::CreateViewWidget view widget class is not defined"));
+	checkf(IsValid(ViewWidgetClass),
+	       TEXT("UCharacterEquipmentComponent::CreateViewWidget view widget class is not defined"));
 	if (!IsValid(PlayerController))
 		return;
 
@@ -296,6 +326,22 @@ void UCharacterEquipmentComponent::CreateEquipmentsWidget(APlayerController* Pla
 
 	WeaponWheelWidget = CreateWidget<UWeaponWheelWidget>(PlayerController, WeaponWheelWidgetClass);
 	WeaponWheelWidget->InitializeWeaponWheelWidget(this);
+}
+
+void UCharacterEquipmentComponent::Server_EquipItemInSlot_Implementation(EEquipmentSlots Slot)
+{
+	EquipItemInSlot(Slot);
+}
+
+void UCharacterEquipmentComponent::OnRep_ItemArray()
+{
+	for (AEquipableItem* Item : ItemsArray)
+	{
+		if (IsValid(Item))
+		{
+			Item->UnEquip();
+		}
+	}
 }
 
 void UCharacterEquipmentComponent::OnWeaponReloadComplete()
@@ -331,6 +377,9 @@ void UCharacterEquipmentComponent::ReloadAmmoInCurrentWeapon(int32 NumberOfAmmo,
 
 void UCharacterEquipmentComponent::CreateLoadout()
 {
+	if (GetOwner()->GetLocalRole() < ROLE_Authority)
+		return;
+
 	AmmunitionArray.AddZeroed((uint32)EAmmunitionType::MAX);
 	for (const TPair<EAmmunitionType, int32>& AmmoPair : MaxAmmunitionAmount)
 	{
@@ -397,4 +446,9 @@ void UCharacterEquipmentComponent::OnCurrentWeaponAmmoChanged(int32 NewAmmo)
 {
 	if (OnCurrentWeaponAmmoChangedEvent.IsBound())
 		OnCurrentWeaponAmmoChangedEvent.Broadcast(NewAmmo, GetAvailableAmmunitionForCurrentWeapon());
+}
+
+void UCharacterEquipmentComponent::OnRep_CurrentEquippedSlot(EEquipmentSlots CurrentEquipmentSlots_Old)
+{
+	EquipItemInSlot(CurrentEquippedSlot);
 }
