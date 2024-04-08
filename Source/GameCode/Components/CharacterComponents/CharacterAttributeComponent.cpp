@@ -31,6 +31,11 @@ void UCharacterAttributeComponent::AddHealth(float HeathToAdd)
 	OnHealthChanged();
 }
 
+void UCharacterAttributeComponent::OnLevelDeserialized_Implementation()
+{
+	OnHealthChanged();
+}
+
 void UCharacterAttributeComponent::OnRep_Health()
 {
 	OnHealthChanged();

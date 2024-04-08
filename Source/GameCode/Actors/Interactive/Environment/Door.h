@@ -3,42 +3,50 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameCode/Actors/Interactive/Interface/IInteractable.h"
+#include "GameCode/SubSystems/SaveSubsystem/SaveSubsystemInterface.h"
 #include "GameFramework/Actor.h"
 #include "Door.generated.h"
 
 UCLASS()
-class GAMECODE_API ADoor : public AActor, public IInteractable
+class GAMECODE_API ADoor : public AActor, public IInteractable, public ISaveSubsystemInterface
 {
 	GENERATED_BODY()
-
-public:
+	
+public:	
 	ADoor();
+
 	virtual void Tick(float DeltaTime) override;
+
 	virtual void Interact(AGCBaseCharacter* Character) override;
+
 	virtual FName GetActionEventName() const override;
-	virtual bool HasOnInteractionCallback() const override;
+
+	virtual bool HasOnInteractionCallback() const;
 	virtual FDelegateHandle AddOnInteractionUFunction(UObject* Object, const FName& FunctionName) override;
 	virtual void RemoveOnInteractionUFunction(FDelegateHandle DelegateHandle) override;
 
+	virtual void OnLevelDeserialized_Implementation() override;
+
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interactive | Door")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
 	UStaticMeshComponent* DoorMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interactive | Door")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
 	USceneComponent* DoorPivot;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interactive | Door")
-	float AngleClosed = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
+	float AngleClosed = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interactive | Door")
-	float AngleOpen = 90;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
+	float AngleOpened = 90.0f;
 
-	UPROPERTY(EditAnywhere	, BlueprintReadOnly, Category="Interactive | Door")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive | Door")
 	UCurveFloat* DoorAnimationCurve;
 
+	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	FOnInteraction OnInteraction;
+	IInteractable::FOnInteraction OnInteractionEvent;
 
 private:
 	void InteractWithDoor();
@@ -50,5 +58,8 @@ private:
 	void OnDoorAnimationFinished();
 
 	FTimeline DoorOpenAnimTimeline;
+
+	UPROPERTY(SaveGame)
 	bool bIsOpnened = false;
+
 };

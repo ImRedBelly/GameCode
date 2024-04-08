@@ -2,13 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GameCode/SubSystems/SaveSubsystem/SaveSubsystemInterface.h"
 #include "CharacterAttributeComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnDeathEventSignature)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float)
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class GAMECODE_API UCharacterAttributeComponent : public UActorComponent
+class GAMECODE_API UCharacterAttributeComponent : public UActorComponent, public ISaveSubsystemInterface
 {
 	GENERATED_BODY()
 
@@ -26,6 +27,8 @@ public:
 	float GetHealthPercent() const;
 	void AddHealth(float HeathToAdd);
 
+	virtual void OnLevelDeserialized_Implementation() override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -35,7 +38,7 @@ protected:
 private:
 	TWeakObjectPtr<class AGCBaseCharacter> CachedBaseCharacterOwner;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Health)
+	UPROPERTY(ReplicatedUsing=OnRep_Health, SaveGame)
 	float Health = 0;
 
 	UFUNCTION()

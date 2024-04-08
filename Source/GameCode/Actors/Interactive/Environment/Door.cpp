@@ -1,7 +1,7 @@
 #include "Door.h"
-
 #include "GameCode/GameCodeTypes.h"
 
+// Sets default values
 ADoor::ADoor()
 {
 	USceneComponent* DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DoorRoot"));
@@ -17,46 +17,9 @@ ADoor::ADoor()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
-
-void ADoor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	DoorOpenAnimTimeline.TickTimeline(DeltaTime);
-}
-
-void ADoor::Interact(AGCBaseCharacter* Character)
-{
-	ensureMsgf(IsValid(DoorAnimationCurve), TEXT("Door animation curve is not set"));
-	InteractWithDoor();
-
-	if (OnInteraction.IsBound())
-		OnInteraction.Broadcast();
-}
-
-FName ADoor::GetActionEventName() const
-{
-	return ActionInteract;
-}
-
-bool ADoor::HasOnInteractionCallback() const
-{
-	return true;
-}
-
-FDelegateHandle ADoor::AddOnInteractionUFunction(UObject* Object, const FName& FunctionName)
-{
-	return OnInteraction.AddUFunction(Object, FunctionName);
-}
-
-void ADoor::RemoveOnInteractionUFunction(FDelegateHandle DelegateHandle)
-{
-	OnInteraction.Remove(DelegateHandle);
-}
-
 void ADoor::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (IsValid(DoorAnimationCurve))
 	{
 		FOnTimelineFloatStatic DoorAnimationDelegate;
@@ -85,7 +48,7 @@ void ADoor::InteractWithDoor()
 
 void ADoor::UpdateDoorAnimation(float Alpha)
 {
-	float YawAngle = FMath::Lerp(AngleClosed, AngleOpen, FMath::Clamp(Alpha, 0.0f, 1.0f));
+	float YawAngle = FMath::Lerp(AngleClosed, AngleOpened, FMath::Clamp(Alpha, 0.0f, 1.0f));
 	DoorPivot->SetRelativeRotation(FRotator(0.0f, YawAngle, 0.0f));
 }
 
@@ -93,3 +56,47 @@ void ADoor::OnDoorAnimationFinished()
 {
 	SetActorTickEnabled(false);
 }
+
+void ADoor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	DoorOpenAnimTimeline.TickTimeline(DeltaTime);
+}
+
+void ADoor::Interact(AGCBaseCharacter* Character)
+{
+	ensureMsgf(IsValid(DoorAnimationCurve), TEXT("Door animation curve is not set"));
+	InteractWithDoor();
+	if (OnInteractionEvent.IsBound())
+	{
+		OnInteractionEvent.Broadcast();
+	}
+}
+
+FName ADoor::GetActionEventName() const
+{
+	return ActionInteract; 
+}
+
+bool ADoor::HasOnInteractionCallback() const
+{
+	return true;
+}
+
+FDelegateHandle ADoor::AddOnInteractionUFunction(UObject* Object, const FName& FunctionName)
+{
+	return OnInteractionEvent.AddUFunction(Object, FunctionName);
+}
+
+void ADoor::RemoveOnInteractionUFunction(FDelegateHandle DelegateHandle)
+{
+	OnInteractionEvent.Remove(DelegateHandle);
+}
+
+void ADoor::OnLevelDeserialized_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("The integer value is: %d"), bIsOpnened);
+	float YawAngle = bIsOpnened ? AngleOpened : AngleClosed;
+	DoorPivot->SetRelativeRotation(FRotator(0.0f, YawAngle, 0.0f));
+}
+

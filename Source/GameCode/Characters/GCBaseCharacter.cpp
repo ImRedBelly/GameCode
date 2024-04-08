@@ -31,6 +31,11 @@ void AGCBaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(AGCBaseCharacter, bIsMantling);
 }
 
+void AGCBaseCharacter::OnLevelDeserialized_Implementation()
+{
+	
+}
+
 void AGCBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();

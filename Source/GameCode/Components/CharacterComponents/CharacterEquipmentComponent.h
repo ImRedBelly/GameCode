@@ -21,7 +21,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnEquippedItemChanged, const AEquipableItem
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCurrentWeaponAmmoChanged, int32, int32);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class GAMECODE_API UCharacterEquipmentComponent : public UActorComponent
+class GAMECODE_API UCharacterEquipmentComponent : public UActorComponent, public ISaveSubsystemInterface
 {
 	GENERATED_BODY()
 
@@ -57,6 +57,7 @@ public:
 	bool IsSelectingWeapon() const;
 	void ConfirmWeaponSelection() const;
 
+	virtual void OnLevelDeserialized_Implementation() override;
 	const TArray<AEquipableItem*>& GetItems() const;
 
 protected:
@@ -111,7 +112,7 @@ private:
 
 	EEquipmentSlots PreviousEquippedSlot;
 
-	UPROPERTY(ReplicatedUsing=OnRep_CurrentEquippedSlot)
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentEquippedSlot, SaveGame)
 	EEquipmentSlots CurrentEquippedSlot;
 
 	UFUNCTION()

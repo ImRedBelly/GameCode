@@ -1,7 +1,11 @@
 #include "GCPlayerController.h"
 
 #include "GameCode/Components/CharacterComponents/CharacterEquipmentComponent.h"
+#include "GameCode/SubSystems/SaveSubsystem/SaveSubsystem.h"
 #include "GameFramework/PlayerInput.h"
+#include "Kismet/GameplayStatics.h"
+
+class USaveSubsystem;
 
 void AGCPlayerController::SetPawn(APawn* InPawn)
 {
@@ -62,6 +66,8 @@ void AGCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("UseInventory", IE_Pressed, this, &AGCPlayerController::UseInventory);
 	InputComponent->BindAction("ConfirmWeaponWheelSelection", IE_Pressed, this,
 	                           &AGCPlayerController::ConfirmWeaponWheelSelection);
+	InputComponent->BindAction("QuickSaveGame", IE_Pressed, this, &AGCPlayerController::QuickSaveGame);
+	InputComponent->BindAction("QuickLoadGame", IE_Pressed, this, &AGCPlayerController::QuickLoadGame);
 }
 
 void AGCPlayerController::MoveForward(float Value)
@@ -309,6 +315,18 @@ void AGCPlayerController::ConfirmWeaponWheelSelection()
 	{
 		CachedBaseCharacter->ConfirmWeaponWheelSelection();
 	}
+}
+
+void AGCPlayerController::QuickSaveGame()
+{
+	USaveSubsystem* SaveSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<USaveSubsystem>();
+	SaveSubsystem->SaveGame();
+}
+
+void AGCPlayerController::QuickLoadGame()
+{
+	USaveSubsystem* SaveSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<USaveSubsystem>();
+	SaveSubsystem->LoadLastGame();
 }
 
 void AGCPlayerController::CreateAndInitializeWidgets()

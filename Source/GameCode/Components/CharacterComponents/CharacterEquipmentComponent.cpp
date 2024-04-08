@@ -296,6 +296,11 @@ void UCharacterEquipmentComponent::ConfirmWeaponSelection() const
 	WeaponWheelWidget->ConfirmSelection();
 }
 
+void UCharacterEquipmentComponent::OnLevelDeserialized_Implementation()
+{
+	EquipItemInSlot(CurrentEquippedSlot);
+}
+
 const TArray<AEquipableItem*>& UCharacterEquipmentComponent::GetItems() const
 {
 	return ItemsArray;

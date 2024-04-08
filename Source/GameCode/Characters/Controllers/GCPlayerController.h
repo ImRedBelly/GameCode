@@ -63,6 +63,9 @@ private:
 	void UseInventory();
 	void ConfirmWeaponWheelSelection();
 
+	void QuickSaveGame();
+	void QuickLoadGame();
+
 	void CreateAndInitializeWidgets();
 
 	TSoftObjectPtr<AGCBaseCharacter> CachedBaseCharacter;

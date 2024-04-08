@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
+#include "SaveGameSystem.h"
 #include "Components/WidgetComponent.h"
 #include "GameCode/GameCodeTypes.h"
 #include "GameCode/Actors/Interactive/InteractiveActor.h"
@@ -10,6 +11,7 @@
 #include "GameCode/Components/LedgeDetectorComponent.h"
 #include "GameCode/Components/CharacterComponents/CharacterAttributeComponent.h"
 #include "GameCode/Inventory/Items/InventoryItem.h"
+#include "GameCode/SubSystems/SaveSubsystem/SaveSubsystemInterface.h"
 #include "GameFramework/Character.h"
 #include "GCBaseCharacter.generated.h"
 
@@ -49,13 +51,17 @@ struct FMantlingSettings
 
 
 UCLASS(Abstract, NotBlueprintable)
-class GAMECODE_API AGCBaseCharacter : public ACharacter, public IGenericTeamAgentInterface
+class GAMECODE_API AGCBaseCharacter : public ACharacter, public IGenericTeamAgentInterface, public ISaveSubsystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	AGCBaseCharacter(const FObjectInitializer& ObjectInitializer);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	//@ISaveSubsystemInterface
+	virtual void OnLevelDeserialized_Implementation() override;
+	//~ISaveSubsystemInterface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaSeconds) override;
